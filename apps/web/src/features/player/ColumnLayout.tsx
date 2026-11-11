@@ -16,6 +16,6 @@ export function ColumnLayout({document,performance,columns,width,font,density}:{
       setPlan(layoutSections(measurements,columns,target));
     });
     return () => cancelAnimationFrame(handle);
-  }, [document.source, columns, width, font, density]);
+  }, [document.source, columns, width, font, density, performance.semitones, performance.capo, performance.spelling, performance.tuning]);
   return <div ref={root}><MusicBlocks document={document} performance={performance} mode="play" measure plan={plan}/></div>;
 }

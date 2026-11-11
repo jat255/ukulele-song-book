@@ -31,7 +31,7 @@ arrangement = app.state.store.create_arrangement(
 Path("/private/tmp/songbook-auth-e2e-arrangement-id").write_text(arrangement.id)
 player_song = app.state.store.create_arrangement(
     None,
-    "{title: Player Test}\n[C]Music\n{start_of_verse}\n"
+    "{title: Player Test}\n[C]Music\n[C][D][Em][G]\n{start_of_verse}\n"
     + "\n".join(f"[C]Line-{number:02}" for number in range(30))
     + "\n{end_of_verse}\n{start_of_tab}\n"
     + "\n".join(f"{string}|" + "-" * 100 + "|" for string in "AECG")
@@ -40,6 +40,10 @@ player_song = app.state.store.create_arrangement(
     None,
 )
 Path("/private/tmp/songbook-auth-e2e-player-id").write_text(player_song.id)
+performance_song = app.state.store.create_arrangement(
+    None, player_song.source, [], None
+)
+Path("/private/tmp/songbook-auth-e2e-performance-id").write_text(performance_song.id)
 writer = PdfWriter()
 writer.add_blank_page(width=200, height=200)
 writer.add_blank_page(width=200, height=200)

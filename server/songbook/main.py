@@ -27,6 +27,8 @@ from .api.auth import (
 )
 from .api.imports import router as imports_router
 from .api.library import router as library_router
+from .api.preferences import initialize as initialize_preferences
+from .api.preferences import router as preferences_router
 from .api.schemas import (
     ArrangementResponse,
     EditRequest,
@@ -56,8 +58,10 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.auth = AuthService(store.database, settings.session_seconds)
     app.state.imports = ImportJobs(store)
     app.state.library = LibraryIndex(store)
+    initialize_preferences(store.database)
     app.include_router(imports_router)
     app.include_router(library_router)
+    app.include_router(preferences_router)
 
     @app.middleware("http")
     async def restrict_loopback(request: Request, call_next):
@@ -130,7 +134,7 @@ def create_app(settings: Settings) -> FastAPI:
                     row[0]
                     for row in db.execute("SELECT version FROM schema_migrations")
                 }
-                if not {1, 2}.issubset(migrations):
+                if not {1, 2, 3, 4, 5}.issubset(migrations):
                     raise ValueError("Migrations incomplete")
                 db.execute("BEGIN IMMEDIATE")
                 db.rollback()
@@ -347,6 +351,7 @@ def create_app(settings: Settings) -> FastAPI:
         @app.get("/edit", include_in_schema=False)
         @app.get("/print", include_in_schema=False)
         @app.get("/login", include_in_schema=False)
+        @app.get("/settings", include_in_schema=False)
         def web_shell():
             return FileResponse(web_dist / "index.html")
 

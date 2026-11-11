@@ -26,6 +26,7 @@ class DeleteRequest(BaseModel):
 
 class VariantRequest(BaseModel):
     source: str = Field(max_length=1_000_000)
+    source_arrangement_id: str | None = None
 
 
 @router.get("/library")
@@ -90,8 +91,16 @@ def variant(
 ):
     require_csrf(request, principal)
     try:
+        refs = []
+        if body.source_arrangement_id:
+            original = request.app.state.store.get_arrangement(
+                body.source_arrangement_id
+            )
+            if original.song_id != song_id:
+                raise ValueError("Arrangement belongs to another song")
+            refs = original.source_refs
         return asdict(
-            request.app.state.store.create_arrangement(song_id, body.source, [], None)
+            request.app.state.store.create_arrangement(song_id, body.source, refs, None)
         )
     except (KeyError, ValueError):
         raise HTTPException(404, detail="Song not found") from None

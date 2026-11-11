@@ -211,3 +211,36 @@ def test_unattached_original_is_visible_as_source_only(tmp_path):
     source = store.register_source(io.BytesIO(b"unconverted"), "Unique Book.pdf", "pdf")
     result = library.search_library("Unique", [], False)
     assert any(item["id"] == source.id and item["source_only"] for item in result)
+
+
+def test_variant_can_retain_original_source_references(tmp_path):
+    from fastapi.testclient import TestClient
+
+    from server.songbook.config import Settings
+    from server.songbook.main import create_app
+
+    app = create_app(
+        Settings(library_root=tmp_path, allowed_origins=("http://testserver",))
+    )
+    app.state.auth.set_password("synthetic test password")
+    source = app.state.store.register_source(io.BytesIO(b"original"), "book.pdf", "pdf")
+    item = app.state.store.create_arrangement(
+        None, "[C]Music", [{"source_id": source.id, "pages": [3]}], None
+    )
+    with TestClient(app, client=("127.0.0.1", 1234)) as client:
+        auth = client.post(
+            "/api/session",
+            json={"password": "synthetic test password"},
+            headers={"Origin": "http://testserver"},
+        )
+        response = client.post(
+            f"/api/songs/{item.song_id}/arrangements",
+            json={"source": "[D]Music", "source_arrangement_id": item.id},
+            headers={
+                "Origin": "http://testserver",
+                "X-CSRF-Token": auth.json()["csrf"],
+            },
+        )
+        assert response.status_code == 201
+        assert response.json()["source_refs"][0]["source_id"] == source.id
+        assert response.json()["source_refs"][0]["pages"] == [3]

@@ -282,6 +282,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/preferences/{ident}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Preferences */
+        get: operations["get_preferences_api_preferences__ident__get"];
+        /** Put Preferences */
+        put: operations["put_preferences_api_preferences__ident__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/provider": {
         parameters: {
             query?: never;
@@ -453,6 +471,54 @@ export interface components {
             /** Source */
             source: string;
         };
+        /** Envelope[Performance] */
+        Envelope_Performance_: {
+            /**
+             * Device Id
+             * @default server
+             */
+            device_id: string;
+            /**
+             * Updated At
+             * @default 0
+             */
+            updated_at: number;
+            value: components["schemas"]["Performance"];
+        };
+        /** Envelope[Play] */
+        Envelope_Play_: {
+            /**
+             * Device Id
+             * @default server
+             */
+            device_id: string;
+            /**
+             * Updated At
+             * @default 0
+             */
+            updated_at: number;
+            value: components["schemas"]["Play"];
+        };
+        /** Envelope[Print] */
+        Envelope_Print_: {
+            /**
+             * Device Id
+             * @default server
+             */
+            device_id: string;
+            /**
+             * Updated At
+             * @default 0
+             */
+            updated_at: number;
+            value: components["schemas"]["Print"];
+        };
+        /** Groups */
+        Groups: {
+            performance?: components["schemas"]["Envelope_Performance_"];
+            play?: components["schemas"]["Envelope_Play_"];
+            print?: components["schemas"]["Envelope_Print_"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -489,6 +555,107 @@ export interface components {
             revision: number;
             /** Tags */
             tags: string[];
+        };
+        /** Performance */
+        Performance: {
+            /**
+             * Capo
+             * @default 0
+             */
+            capo: number;
+            /**
+             * Semitones
+             * @default 0
+             */
+            semitones: number;
+            /**
+             * Spelling
+             * @default auto
+             * @enum {string}
+             */
+            spelling: "auto" | "sharps" | "flats";
+            /**
+             * Tuning
+             * @default high-g
+             * @enum {string}
+             */
+            tuning: "high-g" | "low-g";
+        };
+        /** Play */
+        Play: {
+            /**
+             * Columns
+             * @default auto
+             * @enum {unknown}
+             */
+            columns: "auto" | 1 | 2 | 3;
+            /**
+             * Density
+             * @default compact
+             * @enum {string}
+             */
+            density: "tight" | "compact" | "relaxed";
+            /**
+             * Focus
+             * @default false
+             */
+            focus: boolean;
+            /**
+             * Fontpx
+             * @default 20
+             */
+            fontPx: number;
+            /**
+             * Scrollpxpersecond
+             * @default 15
+             */
+            scrollPxPerSecond: number;
+        };
+        /** Preferences */
+        Preferences: {
+            groups?: components["schemas"]["Groups"];
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+        };
+        /** Print */
+        Print: {
+            /**
+             * Columns
+             * @default auto
+             * @enum {unknown}
+             */
+            columns: "auto" | 1 | 2;
+            /**
+             * Density
+             * @default compact
+             * @enum {string}
+             */
+            density: "tight" | "compact" | "relaxed";
+            /**
+             * Diagrams
+             * @default false
+             */
+            diagrams: boolean;
+            /**
+             * Fontpt
+             * @default 12
+             */
+            fontPt: number;
+            /**
+             * Marginsmm
+             * @default 8
+             */
+            marginsMm: number;
+            /**
+             * Paper
+             * @default Letter
+             * @enum {string}
+             */
+            paper: "Letter" | "A4";
         };
         /** RestoreRequest */
         RestoreRequest: {
@@ -546,6 +713,8 @@ export interface components {
         VariantRequest: {
             /** Source */
             source: string;
+            /** Source Arrangement Id */
+            source_arrangement_id?: string | null;
         };
     };
     responses: never;
@@ -1234,6 +1403,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_preferences_api_preferences__ident__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_preferences_api_preferences__ident__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-match"?: string | null;
+            };
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Preferences"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
                 };
             };
             /** @description Validation Error */

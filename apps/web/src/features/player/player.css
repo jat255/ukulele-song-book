@@ -7,7 +7,7 @@ body {margin:0}
 .player-music[data-density="relaxed"] .lyric-line {margin-bottom:.45em}
 .player-music .tab {max-width:100%;overflow-x:auto}
 .player-music .section-label {break-after:avoid-column}
-.player-tools {box-sizing:border-box;padding:1rem;border-left:1px solid #ccc;background:#fff;display:flex;flex-direction:column;gap:.6rem}
+.player-tools {box-sizing:border-box;padding:1rem;border-left:1px solid #ccc;background:#fff;display:flex;flex-direction:column;gap:.6rem;overflow-y:auto}
 .player-tools h2 {margin:0}
 .player-tools-toggle,.player-close {display:none}
 .player--focus .player-layout {min-height:100vh;grid-template-columns:minmax(0,1fr)}
@@ -19,3 +19,5 @@ body {margin:0}
  .player-tools {position:fixed;z-index:10;top:0;bottom:0;right:0;width:min(85vw,300px);box-shadow:-6px 0 20px #0003;transform:translateX(110%);visibility:hidden}
  .player-tools--open {transform:none;visibility:visible}
 }
+.chord-diagram {display:flex;align-items:start;gap:.4rem;flex-wrap:wrap}
+.chord-diagram svg {max-width:100%;height:auto}

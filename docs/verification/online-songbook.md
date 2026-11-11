@@ -16,3 +16,12 @@ physical phone and its browser have not been checked.
 
 These checks do not change the M1 finding that PDF extraction drafts require
 manual review. Live vision conversion fidelity remains unverified.
+
+Performance checks on one private ChordPro corpus sample confirmed that its
+canonical UTF-8 hash remained unchanged after display transposition, capo
+selection and diagram lookup. Synthetic browser checks covered a 5px/s scroll,
+manual and layout-change pause, restored preferences, denied wake lock,
+transposed adjacent chords at 320px, and an explicit variant that retains tab.
+The built-in ukulele shape dictionary is intentionally small; unvalidated shapes
+are shown as unknown. Tab is not transposed. Live physical-device behavior
+remains unverified.
