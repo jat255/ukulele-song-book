@@ -40,6 +40,8 @@ class PdfRenderRequest:
     font_pt: float = 12
     columns: int | str = 1
     margins_mm: float = 8
+    density: str = "compact"
+    diagrams: bool = False
     snapshots: list[ArrangementSnapshot] = field(default_factory=list)
     performance: PerformanceSettings = field(default_factory=PerformanceSettings)
     settings: PrintSettings | None = None
@@ -53,3 +55,6 @@ class PdfArtifact:
     page_count: int
     columns: int
     diagnostics: tuple[str, ...] = ()
+    browser_version: str = ""
+    font_hashes: dict[str, str] = field(default_factory=dict)
+    wraps: int = 0

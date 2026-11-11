@@ -29,6 +29,8 @@ arrangement = app.state.store.create_arrangement(
     None,
 )
 Path("/private/tmp/songbook-auth-e2e-arrangement-id").write_text(arrangement.id)
+print_song = app.state.store.create_arrangement(None, arrangement.source, [], None)
+Path("/private/tmp/songbook-auth-e2e-print-id").write_text(print_song.id)
 player_song = app.state.store.create_arrangement(
     None,
     "{title: Player Test}\n[C]Music\n[C][D][Em][G]\n{start_of_verse}\n"
@@ -53,7 +55,9 @@ with Path("/private/tmp/songbook-auth-e2e-book.pdf").open("wb") as output:
 
 def work():
     while True:
-        if not run_once(app.state.imports, "browser-test-worker"):
+        if not run_once(
+            app.state.imports, "browser-test-worker", pdf_jobs=app.state.pdf_jobs
+        ):
             time.sleep(0.2)
 
 

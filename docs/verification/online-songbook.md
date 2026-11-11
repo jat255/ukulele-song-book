@@ -25,3 +25,29 @@ transposed adjacent chords at 320px, and an explicit variant that retains tab.
 The built-in ukulele shape dictionary is intentionally small; unvalidated shapes
 are shown as unknown. Tab is not transposed. Live physical-device behavior
 remains unverified.
+
+Three private ChordPro corpus samples were rendered at 12pt to Letter and A4;
+only anonymous sample numbers and aggregate counts are recorded here. The
+resulting PDFs and 100dpi raster pages remain in ignored local evidence storage.
+A normalized extracted-text check found all lyric segments of at least four
+characters, counting repetitions: sample 1, 124/124 on both papers; sample 2,
+94/94 on both; sample 3, 132/132 on both. The four tab lines in sample 2 were
+found exactly in extracted text on both papers. These automated checks do not
+prove visual alignment, absence of clipping, or correctness of short fragments.
+The rasterized pages have not been visually inspected.
+
+| Sample | Letter pages / columns | A4 pages / columns | Tab blocks | Embedded font programs |
+| --- | --- | --- | --- | --- |
+| 1 | 2 / 2 | 2 / 2 | 0 | 3 |
+| 2 | 2 / 2 | 2 / 2 | 1 | 4 |
+| 3 | 2 / 1 | 2 / 1 | 0 | 3 |
+
+Font checks counted embedded font files and embedded Type 3 character
+programs; no unembedded font descriptors were found in these six artifacts.
+An earlier set of blank artifacts exposed a global print-style collision and is
+superseded by the evidence above. The integration test now checks actual PDF
+text after the print workspace is present.
+
+The sample 2 page and text counts were rechecked after the tab-group pagination
+fix. Its earlier raster images predate that fix; updated PDF artifacts were
+retained privately but their pages have not yet been rasterized or inspected.

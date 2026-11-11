@@ -19,10 +19,14 @@ def heartbeat(jobs: ImportJobs, worker_id: str) -> None:
         )
 
 
-def run_once(jobs: ImportJobs, worker_id: str, provider=None) -> bool:
+def run_once(jobs: ImportJobs, worker_id: str, provider=None, pdf_jobs=None) -> bool:
     heartbeat(jobs, worker_id)
     job = jobs.claim_job(worker_id, lease_seconds=360)
     if job is None:
+        if pdf_jobs is not None:
+            handled = pdf_jobs.run_one(worker_id)
+            heartbeat(jobs, worker_id)
+            return handled
         return False
     stop = threading.Event()
 
@@ -68,8 +72,11 @@ def run_worker(jobs: ImportJobs) -> None:
         model = os.environ.get("SONGBOOK_ANTHROPIC_MODEL", "")
         if key and model:
             provider = AnthropicProvider(key, model)
+    from ..pdf.jobs import PdfJobs
+
+    pdf_jobs = PdfJobs(jobs.store)
     with (jobs.store.root / ".worker.lock").open("a+b") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         while True:
-            if not run_once(jobs, worker_id, provider):
+            if not run_once(jobs, worker_id, provider, pdf_jobs):
                 time.sleep(5)
