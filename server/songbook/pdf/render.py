@@ -104,7 +104,8 @@ def render_pdf(request: PdfRenderRequest) -> PdfArtifact:
                         else route.abort()
                     ),
                 )
-                page.goto(url, wait_until="networkidle")
+                page.goto(url + "/?feasibility", wait_until="networkidle")
+                page.wait_for_function("typeof window.renderSong === 'function'")
                 page.evaluate(
                     'args => window.renderSong(args.source, "print", args.font, args.columns)',
                     {

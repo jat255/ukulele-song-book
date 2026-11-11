@@ -6,12 +6,17 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspace @songbook/web",
+    "typecheck": "npm run typecheck --workspace @songbook/web",
+    "generate:api": "uv run python tools/generate_api_types.py",
+    "check:api": "uv run python tools/generate_api_types.py --check"
   },
   "engines": {
     "node": ">=22.12"
   },
   "devDependencies": {
-    "@playwright/test": "^1.65.0"
+    "@playwright/test": "^1.65.0",
+    "openapi-typescript": "7.13.0"
   }
 }

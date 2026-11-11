@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS auth_config (id INTEGER PRIMARY KEY CHECK(id=1), password_hash TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS sessions (id_hash TEXT PRIMARY KEY, csrf TEXT NOT NULL, expires_at REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS login_failures (client TEXT NOT NULL, occurred_at REAL NOT NULL);
+INSERT OR IGNORE INTO schema_migrations VALUES (2);

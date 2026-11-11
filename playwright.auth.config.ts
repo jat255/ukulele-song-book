@@ -1,0 +1,10 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({
+  testDir:'tests/e2e',
+  testMatch:'auth.spec.ts',
+  use:{baseURL:'http://127.0.0.1:4173'},
+  webServer:[
+    {command:'PYTHONPATH=. uv run python tests/e2e/auth_server.py',url:'http://127.0.0.1:18765/health/live',reuseExistingServer:false,timeout:30000},
+    {command:'SONGBOOK_API_TARGET=http://127.0.0.1:18765 npm run dev --workspace @songbook/web -- --port 4173',url:'http://127.0.0.1:4173',reuseExistingServer:false,timeout:30000}
+  ]
+});
