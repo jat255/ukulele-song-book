@@ -49,3 +49,8 @@ test('print render honors the requested font size', async ({page}) => {
   await page.evaluate(() => (window as any).renderSong('[C]Example','print',14,1));
   await expect(page.locator('[data-testid="song"]')).toHaveCSS('font-size','18.6667px');
 });
+test('shows source subtitle', async ({page}) => {
+  await page.goto('/');
+  await page.evaluate(() => (window as any).renderSong('{title: Example}\n{subtitle: Arrangement note}\n[C]Music','play',20,1));
+  await expect(page.getByText('Arrangement note')).toBeVisible();
+});

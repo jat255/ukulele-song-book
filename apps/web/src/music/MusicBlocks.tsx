@@ -14,6 +14,7 @@ export function MusicBlocks({document,mode}:{document:MusicDocument;performance:
       if(block.kind==='section' && block.action==='start') return <div className="section-label" key={index}>{block.label || block.name}</div>;
       if(block.kind==='comment') return <p className="comment" key={index}>{block.text}</p>;
       if(block.kind==='directive' && block.name==='title') return <h1 key={index}>{block.value}</h1>;
+      if(block.kind==='directive' && block.name==='subtitle') return <p className="metadata" key={index}>{block.value}</p>;
       if(block.kind==='directive' && block.name==='artist') return <p className="metadata" key={index}>{block.value}</p>;
       if(block.kind==='directive' && block.name==='capo') return <p className="metadata" key={index}>Capo {block.value}</p>;
       if(block.kind==='unsupported') return <p className="unsupported" key={index}>{block.text}</p>;

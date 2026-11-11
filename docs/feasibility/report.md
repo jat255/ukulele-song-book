@@ -1,6 +1,6 @@
 # Rendering and conversion feasibility
 
-This is a preliminary report, not milestone sign-off. The sources are a small private sample; results do not establish collection-wide accuracy. All original files and rendered evidence remain in ignored local storage. PDF conversion drafts are never automatically accepted.
+This report records the feasibility results and explicit limitations. The sources are a small private sample; results do not establish collection-wide accuracy. All original files and rendered evidence remain in ignored local storage. PDF conversion drafts are never automatically accepted.
 
 ## Tooling and measurements
 
@@ -12,7 +12,7 @@ PDF extraction results and failures are described in [conversion-results.md](con
 
 ## Working decision and unresolved gate
 
-The source-preserving TypeScript lexer, pdfplumber coordinates, pypdfium2 rasterization and Chromium PDF output are the current candidates. They have not passed the complete milestone gate. Existing synthetic tests cover paper sizes, repeats, tab groups, overflow rejection, text size, column selection by actual PDF page count and chord anchors at narrow widths. CSS fragmentation and content order need broader checks; no claim is made that every source is paginated correctly. Do not treat the current draft converter as accurate automatic transcription. A page-by-page comparison, accurate review effort measurements, and detailed verification of chord placement and line order remain required before milestone sign-off.
+Use the source-preserving TypeScript lexer, pdfplumber coordinates, pypdfium2 rasterization and Chromium PDF output as the initial M2 pipeline. All PDF extraction remains review-only, with retained originals as the fallback. Existing synthetic tests cover paper sizes, repeats, tab groups, overflow rejection, text size, column selection by actual PDF page count and chord anchors at narrow widths. CSS fragmentation and content order need broader checks; no claim is made that every source is paginated correctly. Do not treat the current draft converter as accurate automatic transcription. Exact per-page error counts and correction times remain unverified. M2 must preserve the review gate and must not label these drafts as accepted without verification. Broader PDF line-order and chord-placement checks remain required for the M2 print milestone.
 
 Useful local commands (set `PLAYWRIGHT_BROWSERS_PATH` if browsers were installed outside Playwright's default cache):
 
@@ -26,3 +26,5 @@ uv run ruff format --check .
 uv run python tools/convert_corpus.py --manifest .local/corpus/manifest.json --output .local/evidence/conversion
 uv run python tools/render_corpus.py --manifest .local/corpus/manifest.json --output .local/evidence/shared
 ```
+
+A short timed triage pass for the three existing ChordPro sources took approximately 0.13, 0.13 and 0.12 minutes for c1, c2 and c3 respectively; it compared the independent and shared-renderer pages and was not exhaustive chord-by-chord verification. The comparison revealed a missing subtitle in c1; a browser regression test was added and the renderer now displays it. The per-PDF-source triage measurements and observed failures are in [conversion-results.md](conversion-results.md).
