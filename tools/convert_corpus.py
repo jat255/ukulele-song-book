@@ -2,7 +2,9 @@
 
 import argparse
 import json
+import signal
 import sys
+from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
 
@@ -12,6 +14,20 @@ from server.songbook.imports.convert import convert_pages
 from server.songbook.imports.models import SongRegion
 from server.songbook.imports.pdf_extract import extract_pages
 from tools.corpus import file_hash
+
+
+@contextmanager
+def job_deadline(seconds: float):
+    def expired(signum, frame):
+        raise TimeoutError("PDF conversion job exceeded deadline")
+
+    previous = signal.signal(signal.SIGALRM, expired)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous)
 
 
 def main():
@@ -29,18 +45,19 @@ def main():
             continue
         if file_hash(originals[0]) != sample["sha256"]:
             raise ValueError(f"Retained source hash mismatch: {sample['id']}")
-        pages = extract_pages(originals[0], sample["pages"])
-        draft = convert_pages(
-            pages,
-            [
-                SongRegion(
-                    sample["id"],
-                    sample["id"],
-                    sample["pages"],
-                    source_hash=sample["sha256"],
-                )
-            ],
-        )[0]
+        with job_deadline(120):
+            pages = extract_pages(originals[0], sample["pages"])
+            draft = convert_pages(
+                pages,
+                [
+                    SongRegion(
+                        sample["id"],
+                        sample["id"],
+                        sample["pages"],
+                        source_hash=sample["sha256"],
+                    )
+                ],
+            )[0]
         (args.output / (sample["id"] + ".chordpro")).write_text(
             draft.source, encoding="utf-8"
         )

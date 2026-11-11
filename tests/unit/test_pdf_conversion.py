@@ -374,3 +374,12 @@ def test_columns_with_a_single_gutter_crossing_word():
         "R2",
         "R3",
     ]
+
+
+def test_corpus_job_deadline_is_enforced():
+    import time
+
+    from tools.convert_corpus import job_deadline
+
+    with pytest.raises(TimeoutError), job_deadline(0.02):
+        time.sleep(1)
