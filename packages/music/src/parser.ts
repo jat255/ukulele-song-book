@@ -1,6 +1,6 @@
 import type {MusicDocument, Segment} from './model.js';
 
-const aliases: Record<string,string> = {sov:'start_of_verse',eov:'end_of_verse',soc:'start_of_chorus',eoc:'end_of_chorus',sot:'start_of_tab',eot:'end_of_tab',t:'title',st:'subtitle',c:'comment'};
+const aliases: Record<string,string> = {sov:'start_of_verse',eov:'end_of_verse',soc:'start_of_chorus',eoc:'end_of_chorus',sot:'start_of_tab',eot:'end_of_tab',sog:'start_of_grid',eog:'end_of_grid',t:'title',st:'subtitle',c:'comment'};
 const metadata = new Set(['title','subtitle','artist','composer','lyricist','album','year','copyright','duration']);
 const directives = new Set(['key','capo','transpose',...metadata]);
 function tabGroups(text: string): {startLine: number; endLine: number}[] {
@@ -18,6 +18,7 @@ export function parseSource(source: string): MusicDocument {
   const lines = [...source.matchAll(/[^\r\n]*(?:\r\n|\r|\n|$)/g)].filter(m => m[0].length);
   let tab: {start:number; contentStart:number; label?:string}|undefined;
   const sections: string[] = [];
+  let unsupportedEnv: {name:string;start:number}|undefined;
   for (let i=0;i<lines.length;i++) {
     const raw=lines[i][0], start=lines[i].index!, end=start+raw.length, content=raw.replace(/\r\n$|[\r\n]$/,'');
     const match=content.match(/^\s*\{\s*([\w-]+)(?:\s*:\s*([^}]*?)|\s+([^}]*?))?\s*\}\s*$/);
@@ -26,6 +27,13 @@ export function parseSource(source: string): MusicDocument {
     if (tab) {
       if (name==='end_of_tab') { doc.blocks.push({kind:'tab',text:source.slice(tab.contentStart,start),groups:tabGroups(source.slice(tab.contentStart,start)),label:tab.label,span:{start:tab.start,end}}); tab=undefined; }
       continue;
+    }
+    if (unsupportedEnv) {
+      if (name===`end_of_${unsupportedEnv.name}`) {doc.blocks.push({kind:'unsupported',text:source.slice(unsupportedEnv.start,end),span:{start:unsupportedEnv.start,end}}); unsupportedEnv=undefined;}
+      continue;
+    }
+    if (name==='start_of_grid' || name==='start_of_abc' || name==='start_of_ly') {
+      unsupportedEnv={name:name.slice(9),start}; doc.diagnostics.push({code:'unsupported-environment',severity:'warning',message:`Unsupported environment: ${name}`,line:i+1}); continue;
     }
     if (!match && content.trimStart().startsWith('{')) { doc.blocks.push({kind:'unsupported',text:content,span:{start,end}}); doc.diagnostics.push({code:'malformed-directive',severity:'warning',message:'Malformed directive',line:i+1}); continue; }
     if (name==='start_of_tab') { tab={start,contentStart:end,label:value || undefined}; continue; }
@@ -49,6 +57,7 @@ export function parseSource(source: string): MusicDocument {
     }
     doc.blocks.push({kind:'lyric',segments,span:{start,end}});
   }
+  if (unsupportedEnv) doc.blocks.push({kind:'unsupported',text:source.slice(unsupportedEnv.start),span:{start:unsupportedEnv.start,end:source.length}});
   if (tab) {doc.blocks.push({kind:'tab',text:source.slice(tab.contentStart),groups:tabGroups(source.slice(tab.contentStart)),label:tab.label,span:{start:tab.start,end:source.length}}); doc.diagnostics.push({code:'unmatched-tab',severity:'warning',message:'Unclosed tab section'});}
   if (sections.length) doc.diagnostics.push({code:'unmatched-section',severity:'warning',message:'Unclosed section'});
   return doc;

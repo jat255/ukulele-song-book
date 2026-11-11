@@ -1,0 +1,12 @@
+@import './fonts.css';
+.music {font-family:NotoSerif,serif;font-size:var(--music-size,20px);line-height:1.13;column-count:var(--music-columns,1);column-gap:12mm}
+.music h1 {font-size:1.35em;margin:0 0 .6em;column-span:all}
+.lyric-line {margin-bottom:2px;break-inside:avoid;min-height:1.13em}
+.segment {display:inline-flex;flex-direction:column;vertical-align:bottom;white-space:pre}
+.segment--empty {padding-right:.35em}
+.lyric-fragment {white-space:pre-wrap}
+.chord {font-weight:bold;font-family:NotoMono,monospace;line-height:1.1;color:#355670}
+.tab {font-family:NotoMono,monospace;white-space:pre;break-inside:avoid;margin:.5em 0;line-height:1.13}
+.section-label {font-weight:bold;margin:12px 0 2px;break-after:avoid}
+.comment,.unsupported {margin:.3em 0;break-inside:avoid}
+@media print {.section-label {margin-top:10px} body {margin:0} .music {font-size:var(--music-size,12pt)}}
