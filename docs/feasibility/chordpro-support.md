@@ -1,0 +1,7 @@
+# ChordPro support evaluation
+
+The boundary retains exact source separately from its derivative model. Title and common metadata, key/capo/transpose directives, comments, section boundaries, chord anchors, and literal tab are represented in order. Unknown or malformed directives are retained and warned about; custom definitions are retained as text and are not yet validated as playable shapes. Transposition and diagram interpretation are later milestones. The parser does not execute includes or other embedded instructions.
+
+ChordSheetJS was evaluated as a development-only candidate against a synthetic CRLF, unknown-directive and tab example: its formatted output was not an exact round trip. Its upstream license is GPL-2.0; see the [project](https://github.com/martijnversluis/ChordSheetJS). The current narrow lexer keeps source text independently. This is an initial boundary, not a claim of complete ChordPro support.
+
+The three private ChordPro samples round-tripped byte-for-byte. The independent installed ChordPro application (bundle version 6.090.1) rendered each to two pages using `chordpro --output OUTPUT.pdf INPUT`. The pages were visually inspected locally. Source c1 has inconsistent key/capo/comment information and requires review; it was not rewritten. Visual inspection is not exhaustive verification of every anchor or custom diagram. Full corpus comparison remains part of the feasibility milestone.
