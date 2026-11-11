@@ -1,0 +1,7 @@
+# Optional selected-page vision conversion
+
+The adapter is disabled unless a server administrator supplies both credentials and a model. Credentials remain on the server. The service permits at most five explicitly authorized PNG pages, checks page numbers and hashes, and persists a request identity before submission. A request that might have reached the provider is never silently retried; a new explicit authorization with a new nonce is required. The timeout is 120 seconds and output tokens are bounded by server configuration. Provider failures, malformed JSON and truncated output remain errors; a returned draft is parsed and requires visual review.
+
+Rates, when configured, are USD per million input and output tokens. Without both rates, cost is unknown. Estimates use caller-supplied token assumptions, and actual cost can only be computed when provider usage and rates are available. Provider status contains no credentials. Only explicitly selected page images are sent. The application API must construct the selection from server-owned sources and obtain explicit authorization; the internal service is not a browser-facing authorization boundary.
+
+Live fidelity unverified: no authorized provider run. Contract tests use mocked HTTP; no private pages or lyrics were sent to a provider. API format was checked against the [Anthropic vision documentation](https://platform.claude.com/docs/en/build-with-claude/vision) and [Messages API](https://platform.claude.com/docs/en/api/messages/create).

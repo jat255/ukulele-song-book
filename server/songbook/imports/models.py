@@ -34,3 +34,4 @@ class ConversionDraft:
     uncertainty_spans: list[dict] = field(default_factory=list)
     needs_visual_review: bool = True
     diagnostics: list[str] = field(default_factory=list)
+    provider_metadata: dict = field(default_factory=dict)
