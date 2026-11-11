@@ -26,6 +26,7 @@ from .api.auth import (
     require_session,
 )
 from .api.imports import router as imports_router
+from .api.library import router as library_router
 from .api.schemas import (
     ArrangementResponse,
     EditRequest,
@@ -40,6 +41,7 @@ from .imports.pdf_extract import render_page
 from .storage.arrangements import ConflictError, LibraryStore, RecoveringError
 from .storage.db import connect
 from .storage.files import atomic_write
+from .storage.library import LibraryIndex
 
 _session_dependency = Depends(require_session)
 _pdf_lock = threading.Lock()
@@ -53,7 +55,9 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.store = store
     app.state.auth = AuthService(store.database, settings.session_seconds)
     app.state.imports = ImportJobs(store)
+    app.state.library = LibraryIndex(store)
     app.include_router(imports_router)
+    app.include_router(library_router)
 
     @app.middleware("http")
     async def restrict_loopback(request: Request, call_next):

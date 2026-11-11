@@ -22,6 +22,13 @@ source = app.state.store.register_source(
     io.BytesIO(b"%PDF-1.4\n"), "synthetic.pdf", "pdf"
 )
 Path("/private/tmp/songbook-auth-e2e-source-id").write_text(source.id)
+arrangement = app.state.store.create_arrangement(
+    None,
+    "{title: Browser Test}\n[C]Original\n{future: preserve}",
+    [{"source_id": source.id, "pages": [1]}],
+    None,
+)
+Path("/private/tmp/songbook-auth-e2e-arrangement-id").write_text(arrangement.id)
 writer = PdfWriter()
 writer.add_blank_page(width=200, height=200)
 writer.add_blank_page(width=200, height=200)
