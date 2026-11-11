@@ -139,6 +139,18 @@ def convert_pages(
                         for message in by_page[n].diagnostics
                     ),
                     *(
+                        ["Ligature requires visual review"]
+                        if any(
+                            any(
+                                "\ufb00" <= char <= "\ufb06"
+                                for char in c.get("text", "")
+                            )
+                            for n in region.pages
+                            for c in by_page[n].chars
+                        )
+                        else []
+                    ),
+                    *(
                         ["No text could be extracted; consult the original page"]
                         if not result
                         else []

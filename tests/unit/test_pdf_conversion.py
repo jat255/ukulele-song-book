@@ -383,3 +383,18 @@ def test_corpus_job_deadline_is_enforced():
 
     with pytest.raises(TimeoutError), job_deadline(0.02):
         time.sleep(1)
+
+
+def test_ligature_is_flagged_as_uncertain():
+    from server.songbook.imports.convert import convert_pages
+    from server.songbook.imports.models import PageExtraction, SongRegion
+
+    page = PageExtraction(
+        1,
+        100,
+        100,
+        [{"text": "ﬀ", "x0": 1, "x1": 10, "top": 1, "bottom": 5}],
+        [{"text": "ﬀ", "x0": 1, "x1": 10, "top": 1, "bottom": 5}],
+    )
+    draft = convert_pages([page], [SongRegion("x", "Song", [1])])[0]
+    assert any("ligature" in message.lower() for message in draft.diagnostics)
