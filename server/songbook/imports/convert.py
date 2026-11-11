@@ -121,6 +121,15 @@ def convert_pages(
                     }
                     for n in region.pages
                 ],
+                [
+                    {
+                        "start": 0,
+                        "end": len("\n".join(result).encode("utf-16-le")) // 2,
+                        "reason": "unverified extraction",
+                    }
+                ]
+                if result
+                else [],
                 True,
                 [
                     "Draft requires manual visual review; inferred chord alignment may be inaccurate",

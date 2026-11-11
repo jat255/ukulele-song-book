@@ -44,7 +44,7 @@ def main():
         (args.output / (sample["id"] + ".chordpro")).write_text(
             draft.source, encoding="utf-8"
         )
-        (args.output / (sample["id"] + ".json")).write_text(
+        (args.output / (sample["id"] + ".draft.json")).write_text(
             json.dumps(asdict(draft), indent=2) + "\n", encoding="utf-8"
         )
         print(

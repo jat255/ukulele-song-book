@@ -257,3 +257,120 @@ def test_extraction_diagnostics_reach_draft():
     )
     draft = convert_pages([page], [SongRegion("x", "Song", [1])])[0]
     assert "Rotated text requires review" in draft.diagnostics
+
+
+def test_invalid_regions_are_rejected():
+    from server.songbook.imports.convert import convert_pages
+    from server.songbook.imports.models import PageExtraction, SongRegion
+
+    page = PageExtraction(1, 100, 100, [], [])
+    for region in [
+        SongRegion("a", "A", []),
+        SongRegion("a", "A", [2]),
+        SongRegion("a", "A", [1], {1: (0, 0, 2, 1)}),
+    ]:
+        with pytest.raises(ValueError):
+            convert_pages([page], [region])
+
+
+def test_draft_uncertainty_covers_inferred_content():
+    from server.songbook.imports.convert import convert_pages
+    from server.songbook.imports.models import PageExtraction, SongRegion
+
+    page = PageExtraction(
+        1, 100, 100, [], [{"text": "hello", "x0": 1, "x1": 10, "top": 1, "bottom": 5}]
+    )
+    draft = convert_pages([page], [SongRegion("x", "Song", [1])])[0]
+    assert draft.uncertainty_spans == [
+        {"start": 0, "end": len(draft.source), "reason": "unverified extraction"}
+    ]
+
+
+def test_uncertainty_offsets_use_utf16():
+    from server.songbook.imports.convert import convert_pages
+    from server.songbook.imports.models import PageExtraction, SongRegion
+
+    page = PageExtraction(
+        1, 100, 100, [], [{"text": "🌻", "x0": 1, "x1": 10, "top": 1, "bottom": 5}]
+    )
+    assert (
+        convert_pages([page], [SongRegion("x", "Song", [1])])[0].uncertainty_spans[0][
+            "end"
+        ]
+        == 2
+    )
+
+
+def test_columns_tolerate_a_heading_crossing_the_gutter():
+    words = [{"text": "heading", "x0": 70, "x1": 230, "top": 0, "bottom": 8}]
+    words += [
+        {
+            "text": f"{side}{i}",
+            "x0": x,
+            "x1": x + 30,
+            "top": 10 + i * 15,
+            "bottom": 20 + i * 15,
+        }
+        for i in range(4)
+        for side, x in [("L", 10), ("R", 210)]
+    ]
+    assert [w["text"] for w in order_columns(words, 300)] == [
+        "heading",
+        "L0",
+        "L1",
+        "L2",
+        "L3",
+        "R0",
+        "R1",
+        "R2",
+        "R3",
+    ]
+
+
+def test_columns_report_uncertainty_when_content_crosses_gutter():
+    from server.songbook.imports.convert import convert_pages
+    from server.songbook.imports.models import PageExtraction, SongRegion
+
+    words = [
+        {
+            "text": f"{side}{i}",
+            "x0": x,
+            "x1": x + 30,
+            "top": 10 + i * 15,
+            "bottom": 20 + i * 15,
+        }
+        for i in range(4)
+        for side, x in [("L", 10), ("R", 210)]
+    ]
+    words.append({"text": "cross", "x0": 100, "x1": 200, "top": 35, "bottom": 45})
+    draft = convert_pages(
+        [PageExtraction(1, 300, 200, [], words)], [SongRegion("x", "Song", [1])]
+    )[0]
+    assert draft.needs_visual_review
+    assert draft.source_refs
+
+
+def test_columns_with_a_single_gutter_crossing_word():
+    words = [
+        {
+            "text": f"{side}{i}",
+            "x0": x,
+            "x1": x + 30,
+            "top": 20 + i * 15,
+            "bottom": 30 + i * 15,
+        }
+        for i in range(4)
+        for side, x in [("L", 10), ("R", 210)]
+    ]
+    words.append({"text": "cross", "x0": 100, "x1": 200, "top": 5, "bottom": 15})
+    assert [w["text"] for w in order_columns(words, 300)] == [
+        "cross",
+        "L0",
+        "L1",
+        "L2",
+        "L3",
+        "R0",
+        "R1",
+        "R2",
+        "R3",
+    ]
