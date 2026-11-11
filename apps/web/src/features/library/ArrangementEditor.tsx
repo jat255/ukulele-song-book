@@ -38,7 +38,7 @@ export function ArrangementEditor({id,csrf}: {id:string;csrf:string}) {
   async function duplicate() {
     if (!snapshot) return;
     const response = await fetch(`/api/songs/${snapshot.song_id}/arrangements`, {method:'POST',headers,body:JSON.stringify({source})});
-    if (response.ok) {const result = await response.json() as Snapshot; location.href=`/player?id=${encodeURIComponent(result.id)}`;} else setMessage('Could not create arrangement.');
+    if (response.ok) {const result = await response.json() as Snapshot; location.href=`/edit?id=${encodeURIComponent(result.id)}`;} else setMessage('Could not create arrangement.');
   }
   async function saveMetadata() {
     if (!metadata) return;

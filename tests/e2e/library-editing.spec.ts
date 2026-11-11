@@ -6,7 +6,7 @@ test('preserves stale edits and restores a prior revision', async ({browser}) =>
   const a = await browser.newContext(); const b = await browser.newContext();
   const first = await a.newPage(); const second = await b.newPage();
   for (const page of [first,second]) {
-    await page.goto(`http://127.0.0.1:4173/player?id=${id}`);
+    await page.goto(`http://127.0.0.1:4173/edit?id=${id}`);
     await page.getByLabel('Password').fill('synthetic test password');
     await page.getByRole('button', {name:'Sign in'}).click();
     await expect(page.getByLabel('ChordPro source')).toHaveValue(/\[C\]Original/);

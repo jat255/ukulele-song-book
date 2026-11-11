@@ -344,6 +344,7 @@ def create_app(settings: Settings) -> FastAPI:
 
         @app.get("/imports", include_in_schema=False)
         @app.get("/player", include_in_schema=False)
+        @app.get("/edit", include_in_schema=False)
         @app.get("/print", include_in_schema=False)
         @app.get("/login", include_in_schema=False)
         def web_shell():

@@ -10,3 +10,7 @@
 .section-label {font-weight:bold;margin:12px 0 2px;break-after:avoid}
 .comment,.unsupported {margin:.3em 0;break-inside:avoid}
 @media print {.section-label {margin-top:10px} body {margin:0} .music {font-size:var(--music-size,12pt)}}
+.music--planned {column-count:1;display:grid;grid-template-columns:repeat(var(--planned-columns,1),minmax(0,1fr));gap:12mm;align-items:start}
+.music-column {min-width:0}
+.music-block {break-inside:avoid}
+.music-block--heading {break-after:avoid-column}
