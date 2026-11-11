@@ -398,3 +398,29 @@ def test_ligature_is_flagged_as_uncertain():
     )
     draft = convert_pages([page], [SongRegion("x", "Song", [1])])[0]
     assert any("ligature" in message.lower() for message in draft.diagnostics)
+
+
+def test_text_chords_and_vector_lyrics_still_require_visual_review(tmp_path):
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=200, height=200)
+    font = DictionaryObject(
+        {
+            NameObject("/F1"): DictionaryObject(
+                {
+                    NameObject("/Type"): NameObject("/Font"),
+                    NameObject("/Subtype"): NameObject("/Type1"),
+                    NameObject("/BaseFont"): NameObject("/Helvetica"),
+                }
+            )
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject({NameObject("/Font"): font})
+    stream = DecodedStreamObject()
+    stream.set_data(b"BT /F1 12 Tf 10 150 Td (C G) Tj ET 10 130 50 4 re f")
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    path = tmp_path / "mixed.pdf"
+    writer.write(path)
+    result = extract_pages(path, [1])[0]
+    assert "".join(c["text"] for c in result.chars).strip() == "C G"
+    assert result.needs_visual_review
+    assert render_page(path, 1, 72).startswith(b"\x89PNG")
