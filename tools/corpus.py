@@ -95,10 +95,14 @@ def select_corpus(root: Path, manifest: Path, output: Path) -> CorpusManifest:
         samples.append(sample)
         by_hash[sample.sha256] = sample
     output.mkdir(parents=True, exist_ok=True)
+    if (output / "manifest.json").is_symlink():
+        raise ValueError("unsafe manifest destination")
     for sample in samples:
         source = root / sample.relative_path
         target = output / "originals" / (sample.sha256 + source.suffix.lower())
         target.parent.mkdir(parents=True, exist_ok=True)
+        if target.is_symlink() or target.parent.resolve().is_relative_to(root):
+            raise ValueError("unsafe destination")
         shutil.copyfile(source, target)
         if file_hash(target) != sample.sha256 or file_hash(source) != sample.sha256:
             raise ValueError("source changed during copy")

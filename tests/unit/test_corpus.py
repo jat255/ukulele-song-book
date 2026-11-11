@@ -132,3 +132,65 @@ def test_pdf_pages_must_exist(tmp_path):
     )
     with pytest.raises(ValueError):
         select_corpus(root, manifest, tmp_path / "output")
+
+
+def test_selection_never_follows_destination_symlink(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    original = root / "a.cho"
+    original.write_bytes(b"song")
+    output = tmp_path / "output"
+    (output / "originals").mkdir(parents=True)
+    (output / "originals" / (digest(b"song") + ".cho")).symlink_to(original)
+    manifest = tmp_path / "selection.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "samples": [
+                    {
+                        "id": "one",
+                        "category": "chordpro",
+                        "relative_path": "a.cho",
+                        "sha256": digest(b"song"),
+                        "pages": [1],
+                        "expected_observations": "",
+                        "verification_status": "pending",
+                    }
+                ]
+            }
+        )
+    )
+    with pytest.raises(ValueError):
+        select_corpus(root, manifest, output)
+    assert original.read_bytes() == b"song"
+
+
+def test_selection_never_follows_manifest_symlink(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    original = root / "a.cho"
+    original.write_bytes(b"song")
+    output = tmp_path / "output"
+    output.mkdir()
+    (output / "manifest.json").symlink_to(original)
+    selection = tmp_path / "selection.json"
+    selection.write_text(
+        json.dumps(
+            {
+                "samples": [
+                    {
+                        "id": "one",
+                        "category": "chordpro",
+                        "relative_path": "a.cho",
+                        "sha256": digest(b"song"),
+                        "pages": [1],
+                        "expected_observations": "",
+                        "verification_status": "pending",
+                    }
+                ]
+            }
+        )
+    )
+    with pytest.raises(ValueError):
+        select_corpus(root, selection, output)
+    assert original.read_bytes() == b"song"
