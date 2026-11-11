@@ -1,0 +1,7 @@
+{
+  "name": "ukulele-songbook",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {"build": "npm run build --workspaces --if-present"},
+  "engines": {"node": ">=22.12"}
+}

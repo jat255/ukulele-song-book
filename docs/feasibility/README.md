@@ -1,0 +1,5 @@
+# Private corpus methodology
+
+Set `SONGBOOK_SOURCE_ROOT` to the path of a read-only input collection in your shell. Run `uv run python tools/corpus.py inventory --root "$SONGBOOK_SOURCE_ROOT"` and use its hashes to prepare `.local/corpus/selection.json` based on `tests/fixtures/corpus.example.json`. Run `uv run python tools/corpus.py select --root "$SONGBOOK_SOURCE_ROOT" --manifest .local/corpus/selection.json --output .local/corpus`. The selection and copies are private and ignored by Git. Inspect selected PDF pages visually and record ground truth locally before evaluating conversions. Files are copied by hash and checked against their source; the source tree is never an output location.
+
+The initial private selection contains three existing ChordPro sources and four PDFs. The visually inspected pages include an ordinary sheet, a two-column sheet spanning pages, a mixed-tab sheet, a vector-heavy page whose extraction misses most visible content despite no embedded images, and two songs from a larger book. The selection is a feasibility sample, not a representative accuracy estimate. Detailed comparisons and correction times remain for later tasks.

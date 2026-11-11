@@ -1,0 +1,13 @@
+[project]
+name = "ukulele-songbook"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "pypdf>=7.0.1",
+]
+
+[dependency-groups]
+dev = ["pytest", "ruff"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
