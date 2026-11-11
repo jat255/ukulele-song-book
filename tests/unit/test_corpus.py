@@ -194,3 +194,36 @@ def test_selection_never_follows_manifest_symlink(tmp_path):
     with pytest.raises(ValueError):
         select_corpus(root, selection, output)
     assert original.read_bytes() == b"song"
+
+
+def test_existing_hardlinked_output_cannot_modify_other_source(tmp_path):
+    root = tmp_path / "source"
+    root.mkdir()
+    (root / "a.cho").write_bytes(b"song")
+    other = root / "other.cho"
+    other.write_bytes(b"other")
+    output = tmp_path / "output"
+    (output / "originals").mkdir(parents=True)
+    import os
+
+    os.link(other, output / "originals" / (digest(b"song") + ".cho"))
+    selection = tmp_path / "selection.json"
+    selection.write_text(
+        json.dumps(
+            {
+                "samples": [
+                    {
+                        "id": "one",
+                        "category": "chordpro",
+                        "relative_path": "a.cho",
+                        "sha256": digest(b"song"),
+                        "pages": [1],
+                        "expected_observations": "",
+                        "verification_status": "pending",
+                    }
+                ]
+            }
+        )
+    )
+    select_corpus(root, selection, output)
+    assert other.read_bytes() == b"other"

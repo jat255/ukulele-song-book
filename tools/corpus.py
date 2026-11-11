@@ -3,7 +3,9 @@
 import argparse
 import hashlib
 import json
+import os
 import shutil
+import tempfile
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -103,13 +105,25 @@ def select_corpus(root: Path, manifest: Path, output: Path) -> CorpusManifest:
         target.parent.mkdir(parents=True, exist_ok=True)
         if target.is_symlink() or target.parent.resolve().is_relative_to(root):
             raise ValueError("unsafe destination")
-        shutil.copyfile(source, target)
+        with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as tmp:
+            temporary = Path(tmp.name)
+        try:
+            shutil.copyfile(source, temporary)
+            os.replace(temporary, target)
+        finally:
+            temporary.unlink(missing_ok=True)
         if file_hash(target) != sample.sha256 or file_hash(source) != sample.sha256:
             raise ValueError("source changed during copy")
     result = CorpusManifest(samples)
-    (output / "manifest.json").write_text(
-        json.dumps(asdict(result), indent=2) + "\n", encoding="utf-8"
-    )
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=output, delete=False
+    ) as tmp:
+        temporary = Path(tmp.name)
+        tmp.write(json.dumps(asdict(result), indent=2) + "\n")
+    try:
+        os.replace(temporary, output / "manifest.json")
+    finally:
+        temporary.unlink(missing_ok=True)
     return result
 
 
