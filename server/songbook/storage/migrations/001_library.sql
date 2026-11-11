@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY);
+INSERT OR IGNORE INTO schema_migrations VALUES (1);
+CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY);
+CREATE TABLE IF NOT EXISTS arrangements (id TEXT PRIMARY KEY, song_id TEXT NOT NULL REFERENCES songs(id), revision TEXT, parsed_json TEXT, parser_version INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS arrangement_revisions (arrangement_id TEXT NOT NULL REFERENCES arrangements(id), revision TEXT NOT NULL, PRIMARY KEY (arrangement_id,revision));
+CREATE TABLE IF NOT EXISTS revision_events (id INTEGER PRIMARY KEY, arrangement_id TEXT NOT NULL REFERENCES arrangements(id), revision TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS sources (id TEXT PRIMARY KEY, sha256 TEXT NOT NULL UNIQUE, original_name TEXT NOT NULL, kind TEXT NOT NULL, path TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS arrangement_sources (arrangement_id TEXT NOT NULL REFERENCES arrangements(id), source_id TEXT NOT NULL REFERENCES sources(id), pages_json TEXT NOT NULL, crop_asset_id TEXT);
+CREATE TABLE IF NOT EXISTS assets (id TEXT PRIMARY KEY, sha256 TEXT NOT NULL, path TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS write_intents (arrangement_id TEXT PRIMARY KEY REFERENCES arrangements(id), previous_revision TEXT, next_revision TEXT NOT NULL, parsed_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS acceptances (acceptance_key TEXT PRIMARY KEY, arrangement_id TEXT NOT NULL REFERENCES arrangements(id));
+CREATE VIRTUAL TABLE IF NOT EXISTS arrangement_search USING fts5(arrangement_id UNINDEXED, content);

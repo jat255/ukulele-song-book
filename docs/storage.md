@@ -1,0 +1,7 @@
+# Managed storage
+
+Original uploads are copied into `sources/<id>/original.<ext>` and deduplicated by SHA-256. Arrangements have a canonical UTF-8 `song.chordpro` and content-addressed immutable revision files. SQLite stores resource IDs, source references, write intents, revision history and a rebuildable FTS index. Source paths are never used as managed filenames.
+
+Writes hold a cross-process library lock, verify the expected revision, record an intent, fsync the revision and canonical replacement, then commit the parsed index and clear the intent. Reads reject a pending or inconsistent state. On startup, call `recover_pending_writes()` before serving requests. Recovery finishes a prepared revision when its bytes are intact, otherwise restores the previous accepted revision, and rebuilds inconsistent parsed/search data. An initial intent can be recovered from the journaled parsed source. A retry using an existing acceptance key returns the current snapshot without rewriting a later edit. Restore records another revision event.
+
+The library root and SQLite WAL must reside together on reliable local persistent storage. A backup must quiesce writers or use SQLite's backup API together with a coordinated file snapshot; copying a live database and file tree independently is not a consistent backup. Full coordinated backup and restore are implemented in the later portability milestone.
