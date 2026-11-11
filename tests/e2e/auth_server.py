@@ -2,11 +2,15 @@
 
 import io
 import tempfile
+import threading
+import time
 from pathlib import Path
 
 import uvicorn
+from pypdf import PdfWriter
 
 from server.songbook.config import Settings
+from server.songbook.imports.worker import run_once
 from server.songbook.main import create_app
 
 root = Path(tempfile.mkdtemp(prefix="songbook-auth-e2e-"))
@@ -18,4 +22,18 @@ source = app.state.store.register_source(
     io.BytesIO(b"%PDF-1.4\n"), "synthetic.pdf", "pdf"
 )
 Path("/private/tmp/songbook-auth-e2e-source-id").write_text(source.id)
+writer = PdfWriter()
+writer.add_blank_page(width=200, height=200)
+writer.add_blank_page(width=200, height=200)
+with Path("/private/tmp/songbook-auth-e2e-book.pdf").open("wb") as output:
+    writer.write(output)
+
+
+def work():
+    while True:
+        if not run_once(app.state.imports, "browser-test-worker"):
+            time.sleep(0.2)
+
+
+threading.Thread(target=work, daemon=True).start()
 uvicorn.run(app, host="127.0.0.1", port=18765, log_level="warning")

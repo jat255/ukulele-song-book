@@ -21,3 +21,13 @@ def test_password_confirmation_mismatch_does_not_create_credentials(
     monkeypatch.setattr("getpass.getpass", lambda prompt: next(answers))
     assert main(["auth", "set-password"]) != 0
     assert not (tmp_path / "library.sqlite").exists()
+
+
+def test_configured_source_roots_are_named_and_local(monkeypatch, tmp_path):
+    from server.songbook.config import settings_from_environment
+
+    monkeypatch.setenv("SONGBOOK_LIBRARY_ROOT", str(tmp_path / "managed"))
+    monkeypatch.setenv("SONGBOOK_SOURCE_ROOTS", f'{{"music": "{tmp_path}"}}')
+    settings = settings_from_environment()
+    assert settings.library_root == tmp_path / "managed"
+    assert settings.source_roots == {"music": tmp_path}

@@ -2,9 +2,11 @@
 
 import hashlib
 import ipaddress
+import os
 import sqlite3
 import tempfile
 import threading
+import time
 import uuid
 from dataclasses import asdict
 from pathlib import Path
@@ -23,6 +25,7 @@ from .api.auth import (
     require_origin,
     require_session,
 )
+from .api.imports import router as imports_router
 from .api.schemas import (
     ArrangementResponse,
     EditRequest,
@@ -32,6 +35,7 @@ from .api.schemas import (
     SessionResponse,
 )
 from .config import Settings
+from .imports.jobs import ImportJobs
 from .imports.pdf_extract import render_page
 from .storage.arrangements import ConflictError, LibraryStore, RecoveringError
 from .storage.db import connect
@@ -48,6 +52,8 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.settings = settings
     app.state.store = store
     app.state.auth = AuthService(store.database, settings.session_seconds)
+    app.state.imports = ImportJobs(store)
+    app.include_router(imports_router)
 
     @app.middleware("http")
     async def restrict_loopback(request: Request, call_next):
@@ -124,14 +130,31 @@ def create_app(settings: Settings) -> FastAPI:
                     raise ValueError("Migrations incomplete")
                 db.execute("BEGIN IMMEDIATE")
                 db.rollback()
+                if settings.worker_required:
+                    row = db.execute(
+                        "SELECT last_seen FROM worker_heartbeat WHERE id=1"
+                    ).fetchone()
+                    if not row or time.time() - row[0] > 360:
+                        raise ValueError("Worker heartbeat unavailable")
             with tempfile.TemporaryFile(dir=store.root) as probe:
                 probe.write(b"ok")
                 probe.flush()
-            if settings.worker_required:
-                raise ValueError("Worker heartbeat unavailable")
         except (OSError, sqlite3.Error, ValueError):
             raise HTTPException(503, detail="Service unavailable") from None
         return {"status": "ready"}
+
+    @app.get("/api/provider")
+    def provider_status(principal: Principal = _session_dependency):
+        model = os.environ.get("SONGBOOK_ANTHROPIC_MODEL", "")
+        configured = bool(model and os.environ.get("ANTHROPIC_API_KEY"))
+        return {
+            "provider": "anthropic",
+            "model": model or None,
+            "configured": configured,
+            "available": configured
+            and os.environ.get("SONGBOOK_ALLOW_EXTERNAL_AI") == "true",
+            "cost_estimate": None,
+        }
 
     @app.post("/api/session", response_model=SessionResponse)
     def login(body: LoginRequest, request: Request, response: Response):

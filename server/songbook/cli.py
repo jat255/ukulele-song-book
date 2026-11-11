@@ -2,11 +2,10 @@
 
 import argparse
 import getpass
-import os
 import sys
-from pathlib import Path
+from dataclasses import replace
 
-from .config import Settings
+from .config import settings_from_environment
 from .main import create_app
 
 
@@ -15,11 +14,13 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     auth = commands.add_parser("auth")
     auth.add_subparsers(dest="auth_command", required=True).add_parser("set-password")
+    commands.add_parser("worker")
     serve = commands.add_parser("serve")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     args = parser.parse_args(argv)
-    root = Path(os.environ.get("SONGBOOK_LIBRARY_ROOT", "./songbook-data"))
+    settings = settings_from_environment()
+    root = settings.library_root
     if args.command == "auth":
         password = getpass.getpass("Password: ")
         confirmation = getpass.getpass("Confirm password: ")
@@ -29,7 +30,14 @@ def main(argv: list[str] | None = None) -> int:
                 file=sys.stderr,
             )
             return 1
-        create_app(Settings(library_root=root)).state.auth.set_password(password)
+        create_app(settings).state.auth.set_password(password)
+        return 0
+    if args.command == "worker":
+        from .imports.jobs import ImportJobs
+        from .imports.worker import run_worker
+        from .storage.arrangements import LibraryStore
+
+        run_worker(ImportJobs(LibraryStore(root)))
         return 0
     if args.host not in ("127.0.0.1", "::1", "localhost"):
         parser.error("Loopback HTTP mode requires a loopback host")
@@ -42,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
         "http://localhost:5173",
     )
     uvicorn.run(
-        create_app(Settings(library_root=root, allowed_origins=origins)),
+        create_app(replace(settings, allowed_origins=origins)),
         host=args.host,
         port=args.port,
     )
