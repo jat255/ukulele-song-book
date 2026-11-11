@@ -44,8 +44,9 @@ class PdfRenderRequest:
     diagrams: bool = False
     snapshots: list[ArrangementSnapshot] = field(default_factory=list)
     performance: PerformanceSettings = field(default_factory=PerformanceSettings)
+    performances: list[PerformanceSettings] = field(default_factory=list)
     settings: PrintSettings | None = None
-    song_break: str = "page"
+    song_break: str = "new-page"
 
 
 @dataclass(frozen=True)

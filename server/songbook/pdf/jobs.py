@@ -11,7 +11,7 @@ import time
 import uuid
 from pathlib import Path
 
-from ..storage.arrangements import ConflictError, LibraryStore
+from ..storage.arrangements import ConflictError, LibraryStore, RecoveringError
 from ..storage.db import connect
 
 
@@ -43,10 +43,6 @@ class PdfJobs:
             "performance": performance,
             "settings": settings,
         }
-        payload = json.dumps(
-            frozen, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-        )
-        fingerprint = hashlib.sha256(payload.encode()).hexdigest()
         diagnostics = []
         blocks = (snapshot.document or {}).get("blocks", [])
         if performance.get("semitones") and any(
@@ -55,6 +51,113 @@ class PdfJobs:
             diagnostics.append("Tab remains unchanged by transposition.")
         if any(block.get("kind") == "unsupported" for block in blocks):
             diagnostics.append("Unsupported source content requires review.")
+        return self._queue(ident, revision, frozen, diagnostics)
+
+    def enqueue_setlist(
+        self, setlists, ident: str, revision: str, settings: dict, song_break: str
+    ) -> dict:
+        from ..api.preferences import read as read_preferences
+
+        # Hold the canonical-file lock and one SQLite write reservation while
+        # collecting the set membership, source revisions and preferences.
+        # Writers use the same lock or SQLite transaction, so the bundle has
+        # one consistent point in time even when edits arrive concurrently.
+        with self.store._lock(), connect(self.store.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT revision FROM setlists WHERE id=?", (ident,)
+            ).fetchone()
+            if not row:
+                raise KeyError(ident)
+            if row["revision"] != revision:
+                raise ConflictError("Setlist changed")
+            items = db.execute(
+                "SELECT i.id,i.arrangement_id,COALESCE(m.deleted,0) AS deleted "
+                "FROM setlist_items i LEFT JOIN library_metadata m ON m.arrangement_id=i.arrangement_id "
+                "WHERE i.setlist_id=? ORDER BY i.position",
+                (ident,),
+            ).fetchall()
+            if len(items) > 50:
+                raise ValueError("Setlist PDF is limited to 50 occurrences")
+            if not items or song_break not in {"new-page", "pack"}:
+                raise ValueError("Invalid setlist PDF request")
+            captured = {}
+            for item in items:
+                if item["deleted"]:
+                    raise ConflictError("Setlist contains unavailable arrangements")
+                arrangement_id = item["arrangement_id"]
+                if arrangement_id not in captured:
+                    try:
+                        snapshot = self.store._read_locked(db, arrangement_id)
+                    except (KeyError, RecoveringError):
+                        raise ConflictError(
+                            "Setlist contains unavailable arrangements"
+                        ) from None
+                    raw, _ = read_preferences(db, arrangement_id)
+                    captured[arrangement_id] = (snapshot, json.loads(raw)["groups"])
+        snapshots = []
+        performances = []
+        diagnostics = []
+        frozen_arrangements = {}
+        for occurrence in items:
+            arrangement_id = occurrence["arrangement_id"]
+            if arrangement_id in frozen_arrangements:
+                frozen_snapshot, performance = frozen_arrangements[arrangement_id]
+                snapshots.append({**frozen_snapshot, "occurrence_id": occurrence["id"]})
+                performances.append(performance)
+                continue
+            snapshot, groups = captured[arrangement_id]
+            performance = groups["performance"]["value"]
+            if groups["performance"]["updated_at"] == 0:
+                capo = next(
+                    (
+                        b.get("value")
+                        for b in (snapshot.document or {}).get("blocks", [])
+                        if b.get("kind") == "directive" and b.get("name") == "capo"
+                    ),
+                    None,
+                )
+                if capo and str(capo).isdigit() and 0 <= int(capo) <= 12:
+                    performance["capo"] = int(capo)
+            blocks = (snapshot.document or {}).get("blocks", [])
+            if performance.get("semitones") and any(
+                block.get("kind") == "tab" for block in blocks
+            ):
+                diagnostics.append("Tab remains unchanged by transposition.")
+            if any(block.get("kind") == "unsupported" for block in blocks):
+                diagnostics.append("Unsupported source content requires review.")
+            frozen_snapshot = {
+                "id": snapshot.id,
+                "song_id": snapshot.song_id,
+                "revision": snapshot.revision,
+                "source": snapshot.source,
+                "source_refs": snapshot.source_refs,
+                "document": snapshot.document,
+            }
+            frozen_arrangements[snapshot.id] = (frozen_snapshot, performance)
+            snapshots.append({**frozen_snapshot, "occurrence_id": occurrence["id"]})
+            performances.append(performance)
+        if sum(len(item["source"].encode("utf-8")) for item in snapshots) > 5_000_000:
+            raise ValueError("Setlist exceeds source limit")
+        frozen = {
+            "setlist_id": ident,
+            "revision": revision,
+            "snapshots": snapshots,
+            "performances": performances,
+            "settings": settings,
+            "song_break": song_break,
+        }
+        return self._queue(
+            snapshots[0]["id"], revision, frozen, list(dict.fromkeys(diagnostics))
+        )
+
+    def _queue(
+        self, ident: str, revision: str, frozen: dict, diagnostics: list[str]
+    ) -> dict:
+        payload = json.dumps(
+            frozen, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        )
+        fingerprint = hashlib.sha256(payload.encode()).hexdigest()
         job_id = str(uuid.uuid4())
         with connect(self.store.database) as db:
             db.execute("BEGIN IMMEDIATE")

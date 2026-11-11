@@ -1,5 +1,7 @@
 """Authenticated creation and retrieval of frozen PDF artifacts."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
@@ -45,6 +47,45 @@ def enqueue(body: PdfRequest, request: Request, principal: Principal = session):
         ) from None
     except (KeyError, ValueError):
         raise HTTPException(404, detail="Arrangement not found") from None
+
+
+class SetPdfRequest(BaseModel):
+    setlist_id: str
+    revision: str
+    settings: Print
+    songBreak: Literal["new-page", "pack"] = "new-page"
+
+
+@router.post("/setlist", status_code=202)
+def enqueue_setlist(
+    body: SetPdfRequest, request: Request, principal: Principal = session
+):
+    require_csrf(request, principal)
+    raw = body.settings.model_dump()
+    settings = {
+        "paper": raw["paper"],
+        "font_pt": raw["fontPt"],
+        "density": raw["density"],
+        "margins_mm": raw["marginsMm"],
+        "columns": raw["columns"],
+        "diagrams": raw["diagrams"],
+    }
+    try:
+        return request.app.state.pdf_jobs.enqueue_setlist(
+            request.app.state.setlists,
+            body.setlist_id,
+            body.revision,
+            settings,
+            body.songBreak,
+        )
+    except QueueFull:
+        raise HTTPException(429, detail="PDF queue is full; try again") from None
+    except ConflictError:
+        raise HTTPException(409, detail="Setlist or arrangement changed") from None
+    except KeyError:
+        raise HTTPException(404, detail="Setlist not found") from None
+    except ValueError as error:
+        raise HTTPException(400, detail=str(error)) from None
 
 
 @router.get("/{job_id}")

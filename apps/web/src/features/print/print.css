@@ -3,3 +3,4 @@
 .pdf-pages img {max-width:100%;height:auto;box-shadow:0 1px 6px #0004}
 .browser-print {display:none}
 @media print {body:has(.print-workspace) * {visibility:hidden} body:has(.print-workspace) .browser-print,body:has(.print-workspace) .browser-print * {visibility:visible} .browser-print {display:block;position:absolute;left:0;top:0;width:100%}}
+@media print {body:has(.print-workspace) .set-browser-print,body:has(.print-workspace) .set-browser-print * {visibility:visible} .set-browser-print .browser-print {position:static;width:100%}}

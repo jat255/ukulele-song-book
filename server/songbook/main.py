@@ -38,6 +38,7 @@ from .api.schemas import (
     RevisionResponse,
     SessionResponse,
 )
+from .api.setlists import router as setlists_router
 from .config import Settings
 from .imports.jobs import ImportJobs
 from .imports.pdf_extract import render_page
@@ -46,6 +47,7 @@ from .storage.arrangements import ConflictError, LibraryStore, RecoveringError
 from .storage.db import connect
 from .storage.files import atomic_write
 from .storage.library import LibraryIndex
+from .storage.setlists import SetlistStore
 
 _session_dependency = Depends(require_session)
 _pdf_lock = threading.Lock()
@@ -60,6 +62,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.auth = AuthService(store.database, settings.session_seconds)
     app.state.imports = ImportJobs(store)
     app.state.library = LibraryIndex(store)
+    app.state.setlists = SetlistStore(store)
     app.state.pdf_jobs = PdfJobs(store)
     app.state.pdf_lock = _pdf_lock
     initialize_preferences(store.database)
@@ -67,6 +70,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(library_router)
     app.include_router(preferences_router)
     app.include_router(pdf_router)
+    app.include_router(setlists_router)
 
     @app.middleware("http")
     async def restrict_loopback(request: Request, call_next):
@@ -139,7 +143,7 @@ def create_app(settings: Settings) -> FastAPI:
                     row[0]
                     for row in db.execute("SELECT version FROM schema_migrations")
                 }
-                if not {1, 2, 3, 4, 5, 6}.issubset(migrations):
+                if not {1, 2, 3, 4, 5, 6, 7}.issubset(migrations):
                     raise ValueError("Migrations incomplete")
                 db.execute("BEGIN IMMEDIATE")
                 db.rollback()
@@ -357,6 +361,9 @@ def create_app(settings: Settings) -> FastAPI:
         @app.get("/print", include_in_schema=False)
         @app.get("/login", include_in_schema=False)
         @app.get("/settings", include_in_schema=False)
+        @app.get("/setlists", include_in_schema=False)
+        @app.get("/set-player", include_in_schema=False)
+        @app.get("/set-print", include_in_schema=False)
         def web_shell():
             return FileResponse(web_dist / "index.html")
 

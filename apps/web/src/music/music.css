@@ -20,3 +20,6 @@
 .print-diagrams {display:flex;flex-wrap:wrap;gap:8pt;list-style:none;padding:0;break-inside:avoid}
 .print-diagrams li {display:flex;flex-direction:column;break-inside:avoid;font-size:9pt}
 .tab--group {margin:0;break-inside:avoid}
+.set-print-song {margin-bottom:1em}
+.set-print-song--page {break-before:page}
+.set-print-song h1 {break-after:avoid}

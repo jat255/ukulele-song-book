@@ -19,10 +19,22 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def render_pdf(request: PdfRenderRequest) -> PdfArtifact:
-    if request.snapshots:
-        if len(request.snapshots) != 1:
-            raise ValueError("Only one snapshot is supported during feasibility")
-        request = replace(request, source=request.snapshots[0].source, snapshots=[])
+    if len(request.snapshots) == 1:
+        request = replace(
+            request,
+            source=request.snapshots[0].source,
+            snapshots=[],
+            performance=request.performances[0]
+            if request.performances
+            else request.performance,
+        )
+    if len(request.snapshots) > 1 and (
+        len(request.performances) != len(request.snapshots)
+        or len(request.snapshots) > 50
+    ):
+        raise ValueError("Invalid setlist snapshots")
+    if request.song_break not in {"new-page", "pack"}:
+        raise ValueError("Invalid song break")
     if request.settings is not None:
         settings = request.settings
         request = replace(
@@ -114,23 +126,52 @@ def render_pdf(request: PdfRenderRequest) -> PdfArtifact:
                     ),
                 )
                 page.goto(url + "/?feasibility", wait_until="networkidle")
-                page.wait_for_function("typeof window.renderSong === 'function'")
-                page.evaluate(
-                    'args => window.renderSong(args.source, "print", args.font, args.columns, args.performance, args.density, args.diagrams)',
-                    {
-                        "source": request.source,
-                        "font": request.font_pt,
-                        "columns": request.columns,
-                        "performance": {
-                            "semitones": request.performance.semitones,
-                            "spelling": request.performance.spelling,
-                            "capo": request.performance.capo,
-                            "tuning": request.performance.tuning,
-                        },
-                        "density": request.density,
-                        "diagrams": request.diagrams,
-                    },
+                page.wait_for_function(
+                    "typeof window.renderSong === 'function' && typeof window.renderSet === 'function'"
                 )
+                if request.snapshots:
+                    songs = [
+                        {
+                            "source": snap.source,
+                            "performance": {
+                                "semitones": perf.semitones,
+                                "spelling": perf.spelling,
+                                "capo": perf.capo,
+                                "tuning": perf.tuning,
+                            },
+                        }
+                        for snap, perf in zip(
+                            request.snapshots, request.performances, strict=True
+                        )
+                    ]
+                    page.evaluate(
+                        "args => window.renderSet(args.songs,args.font,args.columns,args.density,args.diagrams,args.songBreak)",
+                        {
+                            "songs": songs,
+                            "font": request.font_pt,
+                            "columns": request.columns,
+                            "density": request.density,
+                            "diagrams": request.diagrams,
+                            "songBreak": request.song_break,
+                        },
+                    )
+                else:
+                    page.evaluate(
+                        'args => window.renderSong(args.source, "print", args.font, args.columns, args.performance, args.density, args.diagrams)',
+                        {
+                            "source": request.source,
+                            "font": request.font_pt,
+                            "columns": request.columns,
+                            "performance": {
+                                "semitones": request.performance.semitones,
+                                "spelling": request.performance.spelling,
+                                "capo": request.performance.capo,
+                                "tuning": request.performance.tuning,
+                            },
+                            "density": request.density,
+                            "diagrams": request.diagrams,
+                        },
+                    )
                 page.wait_for_function(
                     "document.documentElement.dataset.renderReady === 'true'"
                 )

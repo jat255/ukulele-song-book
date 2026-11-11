@@ -17,5 +17,16 @@ function render(source:string,mode:'print'|'play',font:number,columns:number,per
   root.render(<main style={style} data-print-density={density}>{mode==='print' && (scope?.sourceKey || performance.capo !== 0) && <p className="print-keys">Source key: {scope?.sourceKey ?? 'unknown'}; shape key: {scope?.displayKey ?? 'unknown'}; sounding key: {scope?.soundingKey ?? 'unknown'}; capo: {performance.capo}</p>}<MusicBlocks document={doc} performance={performance} mode={mode}/>{mode==='print' && diagrams && <ul className="print-diagrams">{chords.map(chord => <ChordDiagram key={chord} chord={chord} diagram={resolveDiagram(chord,performance.tuning,original.definitions)}/>)}</ul>}</main>);
   requestAnimationFrame(()=>document.fonts.ready.then(()=>requestAnimationFrame(()=>document.documentElement.dataset.renderReady='true')));
 }
+function renderSet(songs:{source:string;performance:PerformanceSettings}[],font:number,columns:number,density:string,diagrams:boolean,songBreak:'new-page'|'pack') {
+  document.documentElement.dataset.renderReady='false';
+  const style={"--music-size":`${font}pt`,"--music-columns":String(columns)} as React.CSSProperties;
+  root.render(<main style={style} data-print-density={density}>{songs.map((song,index) => {
+    const original=parseSource(song.source), doc=derivePerformance(original,song.performance), scope=doc.scopes[0];
+    const chords=[...new Set(doc.blocks.flatMap(block => block.kind === 'lyric' ? block.segments.flatMap(segment => segment.chord ? [segment.chord] : []) : []))];
+    return <section key={index} className={`set-print-song${index>0 && songBreak==='new-page' ? ' set-print-song--page' : ''}`}>{(scope?.sourceKey || song.performance.capo !== 0) && <p className="print-keys">Source key: {scope?.sourceKey ?? 'unknown'}; shape key: {scope?.displayKey ?? 'unknown'}; sounding key: {scope?.soundingKey ?? 'unknown'}; capo: {song.performance.capo}</p>}<MusicBlocks document={doc} performance={song.performance} mode="print"/>{diagrams && <ul className="print-diagrams">{chords.map(chord => <ChordDiagram key={chord} chord={chord} diagram={resolveDiagram(chord,song.performance.tuning,original.definitions)}/>)}</ul>}</section>;
+  })}</main>);
+  requestAnimationFrame(()=>document.fonts.ready.then(()=>requestAnimationFrame(()=>document.documentElement.dataset.renderReady='true')));
+}
+(window as unknown as {renderSet:typeof renderSet}).renderSet=renderSet;
 (window as unknown as {renderSong:typeof render}).renderSong=render;
 render(example,'play',20,1);

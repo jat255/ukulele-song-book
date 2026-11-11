@@ -299,6 +299,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pdfs/setlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enqueue Setlist */
+        post: operations["enqueue_setlist_api_pdfs_setlist_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pdfs/{job_id}": {
         parameters: {
             query?: never;
@@ -399,6 +416,43 @@ export interface paths {
         post: operations["login_api_session_post"];
         /** Logout */
         delete: operations["logout_api_session_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/setlists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sets */
+        get: operations["list_sets_api_setlists_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_setlists_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/setlists/{ident}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_api_setlists__ident__get"];
+        /** Save */
+        put: operations["save_api_setlists__ident__put"];
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_setlists__ident__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -522,10 +576,20 @@ export interface components {
             /** Source Refs */
             source_refs: components["schemas"]["SourceReference"][];
         };
+        /** CreateSet */
+        CreateSet: {
+            /** Title */
+            title: string;
+        };
         /** DeleteRequest */
         DeleteRequest: {
             /** Revision */
             revision: number;
+        };
+        /** DeleteSet */
+        DeleteSet: {
+            /** Revision */
+            revision: string;
         };
         /** DraftEdit */
         DraftEdit: {
@@ -754,6 +818,15 @@ export interface components {
             /** Revision */
             revision: string;
         };
+        /** SaveSet */
+        SaveSet: {
+            /** Items */
+            items: components["schemas"]["SetItem"][];
+            /** Revision */
+            revision: string;
+            /** Title */
+            title: string;
+        };
         /** ScanSelection */
         ScanSelection: {
             /** Path */
@@ -763,6 +836,27 @@ export interface components {
         SessionResponse: {
             /** Csrf */
             csrf: string;
+        };
+        /** SetItem */
+        SetItem: {
+            /** Arrangementid */
+            arrangementId: string;
+            /** Id */
+            id: string;
+        };
+        /** SetPdfRequest */
+        SetPdfRequest: {
+            /** Revision */
+            revision: string;
+            /** Setlist Id */
+            setlist_id: string;
+            settings: components["schemas"]["Print"];
+            /**
+             * Songbreak
+             * @default new-page
+             * @enum {string}
+             */
+            songBreak: "new-page" | "pack";
         };
         /** SourceReference */
         SourceReference: {
@@ -1526,6 +1620,39 @@ export interface operations {
             };
         };
     };
+    enqueue_setlist_api_pdfs_setlist_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPdfRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     status_api_pdfs__job_id__get: {
         parameters: {
             query?: never;
@@ -1776,6 +1903,158 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    list_sets_api_setlists_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    create_api_setlists_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_api_setlists__ident__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_api_setlists__ident__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_api_setlists__ident__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

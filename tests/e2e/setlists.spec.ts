@@ -1,0 +1,75 @@
+import {test,expect} from '@playwright/test';
+import {execFileSync} from 'node:child_process';
+
+test('creates, reorders, and plays repeated occurrences', async ({page}) => {
+  await page.goto('/setlists');
+  await page.getByLabel('Password').fill('synthetic test password');
+  await page.getByRole('button',{name:'Sign in'}).click();
+  await page.getByLabel('Setlist title').fill('Rehearsal');
+  await page.getByRole('button',{name:'Create setlist'}).click();
+  await page.getByLabel('Choose arrangement').selectOption({label:'Player Test'});
+  await page.getByRole('button',{name:'Add to setlist'}).click();
+  await page.getByRole('button',{name:'Add to setlist'}).click();
+  await expect(page.getByTestId('set-occurrence')).toHaveCount(2);
+  await page.getByRole('button',{name:'Move up'}).last().click();
+  await page.getByRole('button',{name:'Save setlist'}).click();
+  await expect(page.getByText('Setlist saved')).toBeVisible();
+  await page.reload();
+  await expect(page.getByTestId('set-occurrence')).toHaveCount(2);
+  await page.getByRole('link',{name:'Play setlist'}).click();
+  await expect(page.getByText('Song 1 of 2')).toBeVisible();
+  await page.getByRole('button',{name:'Start scrolling'}).click();
+  await expect(page.getByRole('button',{name:'Pause scrolling'})).toBeVisible();
+  await page.getByRole('button',{name:'Next song'}).click();
+  await expect(page.getByText('Song 2 of 2')).toBeVisible();
+  await expect(page.getByTestId('song')).toContainText('Player Test');
+  await expect(page.getByRole('button',{name:'Start scrolling'})).toBeVisible();
+  await page.getByRole('button',{name:'Previous song'}).click();
+  await expect(page.getByText('Song 1 of 2')).toBeVisible();
+});
+
+test('browser print includes repeated songs without interface chrome', async ({page}) => {
+  await page.goto('/setlists');
+  await page.getByLabel('Password').fill('synthetic test password');
+  await page.getByRole('button',{name:'Sign in'}).click();
+  await page.getByLabel('Setlist title').fill('Print rehearsal');
+  await page.getByRole('button',{name:'Create setlist'}).click();
+  await page.getByLabel('Choose arrangement').selectOption({label:'Browser Test'});
+  await page.getByRole('button',{name:'Add to setlist'}).click();
+  await page.getByRole('button',{name:'Add to setlist'}).click();
+  await page.getByRole('button',{name:'Save setlist'}).click();
+  await expect(page.getByText('Setlist saved')).toBeVisible();
+  await page.getByRole('link',{name:'Print setlist'}).click();
+  await expect(page.getByRole('button',{name:'Browser print'})).toBeEnabled();
+  await expect(page.getByLabel('Density')).toBeVisible();
+  await expect(page.getByLabel('Margins (mm)')).toBeVisible();
+  await expect(page.getByText(/Actual page count:/)).toBeVisible({timeout:30000});
+  await expect(page.getByRole('img',{name:'PDF page 1'})).toBeVisible();
+  await page.emulateMedia({media:'print'});
+  const pdf = await page.pdf({preferCSSPageSize:true});
+  const text = execFileSync('.venv/bin/python', ['-c', 'import io,sys; from pypdf import PdfReader; print(" ".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(sys.stdin.buffer.read())).pages))'], {input:pdf, encoding:'utf8'});
+  expect(text.match(/Original/g)).toHaveLength(2);
+  expect(text).not.toContain('Print setlist');
+  const visibility = await page.locator('.set-browser-print .browser-print').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).visibility));
+  expect(visibility).toEqual(['visible','visible']);
+  expect(await page.locator('.print-workspace h2').evaluate(node => getComputedStyle(node).visibility)).toBe('hidden');
+});
+
+test('reorders songs with pointer drag', async ({page}) => {
+  await page.goto('/setlists');
+  await page.getByLabel('Password').fill('synthetic test password');
+  await page.getByRole('button',{name:'Sign in'}).click();
+  await page.getByLabel('Setlist title').fill('Drag rehearsal');
+  await page.getByRole('button',{name:'Create setlist'}).click();
+  await page.getByLabel('Choose arrangement').selectOption({label:'Player Test'});
+  await page.getByRole('button',{name:'Add to setlist'}).click();
+  await page.getByLabel('Choose arrangement').selectOption({label:'Browser Test'});
+  await page.getByRole('button',{name:'Add to setlist'}).click();
+  const items=page.getByTestId('set-occurrence');
+  await items.nth(1).dragTo(items.nth(0));
+  await expect(items.nth(0)).toContainText('Browser Test');
+  await page.getByRole('button',{name:'Save setlist'}).click();
+  await expect(page.getByText('Setlist saved')).toBeVisible();
+  await page.reload();
+  await expect(page.getByTestId('set-occurrence').first()).toContainText('Browser Test');
+});
