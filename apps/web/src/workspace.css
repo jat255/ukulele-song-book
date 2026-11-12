@@ -107,3 +107,8 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .source-only-label {display:block;font-size:.72rem;color:#6b7965;font-weight:400;margin-top:.2rem}
 .library-empty {padding:1rem;margin:0;color:#61705f}
 @media(max-width:600px){.library-filters > div {flex:1 1 100%}.library-table th,.library-table td {padding:.55rem .65rem}.library-table {min-width:680px}}
+.workspace-header {display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem}
+.workspace-header h1 {margin:0;flex:0 1 auto}
+.workspace-header > button {flex-shrink:0;white-space:nowrap;font-size:.85rem;background:transparent}
+.workspace-header + [role=dialog] {padding:1rem;margin:0 0 1rem;border:1px solid #d8dfd2;border-radius:10px;background:#fffdf9}
+.workspace-header + [role=dialog] p {margin-top:0}

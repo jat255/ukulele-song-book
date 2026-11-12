@@ -37,3 +37,13 @@ test('library presents compact song rows in a table without storage estimates',a
  for(const width of [1280,390,320]){await page.setViewportSize({width,height:800});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
  await page.screenshot({path:'.local/review/library-table-phone.png'});await page.setViewportSize({width:1280,height:800});await page.screenshot({path:'.local/review/library-table-desktop.png'});
 });
+
+test('sign out sits at the top right beside the songbook title',async({page})=>{
+ await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
+ for(const width of [1280,390,320]){
+  await page.setViewportSize({width,height:800});const title=page.getByRole('heading',{name:'Songbook',exact:true});await expect(title).toBeVisible();
+  const heading=await title.boundingBox(),button=await page.getByRole('button',{name:'Sign out',exact:true}).boundingBox();
+  expect(button!.x).toBeGreaterThan(heading!.x+heading!.width);expect(button!.y).toBeLessThan(heading!.y+heading!.height);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+});

@@ -141,3 +141,15 @@ no visible Online only status, and document bounds at 1280/390/320px. Desktop
 and phone screenshots inspected; inline final review found no outstanding
 critical/important task issue. No backend/schema changes or new physical-device,
 Firefox, real-PDF or live-provider verification claim.
+
+## Sign-out placement
+
+Moved workspace Sign out into the header beside Songbook, aligned right.
+Confirmation now appears immediately beneath the header rather than below the
+library table. Existing session revocation and local-download removal behavior
+is preserved. Placement regression failed before the change; checks cover
+1280/390/320px widths and document overflow.
+Sign-out final verification: full Chromium 92 passed (27.6s), focused WebKit
+5 passed (4.4s), unit suites 5+26 passed, typecheck/build/diff checks passed.
+Narrow-screen screenshot visually inspected; inline final review clean. Prior
+physical-device, Firefox, corpus/PDF and provider limitations remain unchanged.
