@@ -95,3 +95,11 @@ Addressed review feedback inline from clean base 119535e. See
 and remaining limits. This follow-up changes local UI, diagram lookup, preview
 resolution and automatic song caching; M4 remains unauthorized. Prior M1–M3
 completion evidence is retained rather than overwritten.
+
+Second review follow-up: replaced expanding library disclosures with floating
+popovers, moved chord overview above music with a hide toggle, rebuilt settings
+spacing and the grouped session panel, and added distinct play/print choosers.
+Final Chromium suite: 87 passed; unit suite: 5 web +25 music passed;
+production build, typecheck and diff whitespace checks passed. Inline review
+caught and fixed setlist-ID leakage into arrangement navigation (RED→GREEN).
+See review-comments.md for details and preserved validation limits.

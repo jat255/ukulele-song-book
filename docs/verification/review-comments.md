@@ -49,3 +49,38 @@ preview scrolling. Final full browser suite is green. No other critical or
 important finding remained in the reviewed task diff. Unsupported voicings,
 manual refresh of existing offline selections, raster zoom limits and the
 previously recorded corpus/device/provider limitations remain as described.
+
+## Second review — controls and navigation
+
+- Library Export and Offline options now use native floating popovers with
+  Escape and outside-click dismissal. They do not expand the song row. Phone
+  bounds are checked at 390 × 600; action panels scroll within a bounded height.
+- Chord diagrams moved from the bottom of the tools drawer to a horizontal
+  overview above the music, with Show/Hide chords. Hiding/revealing them pauses
+  auto-scroll because it changes layout. Individual chord hover diagrams remain.
+- Settings now groups Playing and Printing defaults into separate labeled cards,
+  with vertical labels and consistent field spacing; cards stack on narrow screens.
+- `/player` and `/print` without a song ID now show distinct searchable song
+  choosers. Their links open that destination for the selected arrangement.
+  Arrangement editor/print navigation retains the selected song.
+- The tools panel now has Key & capo, Readability, and Practice cards. Key/capo,
+  text/density/columns, and scroll/section/wake controls are grouped by purpose.
+  Scrolling is the prominent practice action; variant saving and cache status
+  are secondary. The desktop panel stays in view while music scrolls; phones
+  retain a dismissible overlay with focus management.
+
+Native popovers were chosen for built-in keyboard/light-dismiss behavior.
+Synthetic desktop and phone screenshots were visually inspected. Phone tests
+remain viewport emulation; prior real-corpus, PDF and live-provider limits are
+unchanged. No collection data was sent externally.
+
+Final second-review checks: full Chromium suite 87 passed (27.3s), web/music
+unit suite 5 +25 passed, typecheck and production build passed, whitespace
+check passed. Final inline review found a setlist-ID navigation edge case;
+the regression failed before the guard and passed afterward. Original browser
+fixtures were adjusted to open popovers through their real buttons. No Python
+code changed in this follow-up; the previously recorded Python results belong
+to the earlier review, not a new backend verification claim.
+Focused WebKit verification of the new chooser, controls, chord toggle, popover
+geometry/dismissal and contextual navigation: 2 passed (4.6s). This is not a
+full WebKit/offline suite or a Firefox/physical-phone claim.

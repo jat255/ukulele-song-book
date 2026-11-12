@@ -1,5 +1,5 @@
 import type {Locator} from '@playwright/test';
-async function openOffline(row:Locator){await row.waitFor();const menu=row.locator('.offline-actions');if(await menu.count() && await menu.getAttribute('open')===null)await menu.locator('summary').click();}
+async function openOffline(row:Locator){await row.waitFor();const menu=row.locator('.offline-actions');if(await menu.count() && !await menu.locator('[popover]').evaluate(el=>el.matches(':popover-open')))await menu.getByRole('button',{name:'Offline options',exact:true}).click();}
 import {test as base,expect,webkit} from '@playwright/test';
 const test=base.extend({context:async({browserName,browser,baseURL},use,testInfo)=>{const context=browserName==='webkit' ? await webkit.launchPersistentContext(testInfo.outputPath('profile'),{headless:true,baseURL}) : await browser.newContext({baseURL});await use(context);await context.close();}});
 import type {Page} from '@playwright/test';

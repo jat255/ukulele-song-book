@@ -1,3 +1,4 @@
+import {ActionPopover} from '../ActionPopover';
 import React, {useState} from 'react';
 
 type Kind = 'library' | 'chordpro' | 'arrangement';
@@ -24,5 +25,5 @@ export function ExportButtons({csrf, id}: {csrf:string; id?:string}) {
     } catch {setError('Export could not be prepared. Please try again.');}
     finally {setBusy(false);}
   }
-  return <details className="export-actions"><summary>Export</summary>{id ? <><button disabled={busy} onClick={()=>void start('chordpro')}>Export ChordPro</button><button disabled={busy} onClick={()=>void start('arrangement')}>Export with sources</button></> : <button disabled={busy} onClick={()=>void start('library')}>Export library</button>}{busy && <span role="status">Preparing export…</span>}{error && <span role="alert">{error}</span>}{ready && <a href={`/api/exports/${encodeURIComponent(ready.id)}/file`}>Download {ready.kind === 'library' ? 'library export' : ready.kind === 'chordpro' ? 'ChordPro' : 'arrangement export'}</a>}</details>;
+  return <ActionPopover label="Export" className="export-actions">{id ? <><button disabled={busy} onClick={()=>void start('chordpro')}>Export ChordPro</button><button disabled={busy} onClick={()=>void start('arrangement')}>Export with sources</button></> : <button disabled={busy} onClick={()=>void start('library')}>Export library</button>}{busy && <span role="status">Preparing export…</span>}{error && <span role="alert">{error}</span>}{ready && <a href={`/api/exports/${encodeURIComponent(ready.id)}/file`}>Download {ready.kind === 'library' ? 'library export' : ready.kind === 'chordpro' ? 'ChordPro' : 'arrangement export'}</a>}</ActionPopover>;
 }

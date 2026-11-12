@@ -1,5 +1,5 @@
 import type {Locator} from '@playwright/test';
-async function openOffline(row:Locator){await row.waitFor();const menu=row.locator('.offline-actions');if(await menu.count() && await menu.getAttribute('open')===null)await menu.locator('summary').click();}
+async function openOffline(row:Locator){await row.waitFor();const menu=row.locator('.offline-actions');if(await menu.count() && !await menu.locator('[popover]').evaluate(el=>el.matches(':popover-open')))await menu.getByRole('button',{name:'Offline options',exact:true}).click();}
 import {test,expect} from '@playwright/test';
 
 test('downloaded song opens and transposes after a cold offline reload', async ({page,context}) => {

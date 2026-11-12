@@ -51,3 +51,26 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .setlists > ul > li {padding:1rem;background:#fffdf9;border:1px solid #d8dfd6;border-radius:8px}
 .setlists > label {display:block!important}
 .setlists > input,.setlists > select {margin-bottom:.8rem;min-width:min(100%,20rem)}
+/* Actions float over the workspace; their triggers retain a fixed footprint. */
+.action-popover {display:inline-block}
+.action-popover > button {white-space:nowrap;background:transparent;border-color:transparent}
+.action-popover-panel {position:fixed;inset:auto;margin:0;width:300px;max-width:calc(100vw - 16px);max-height:min(70vh,300px);overflow:auto;box-sizing:border-box;padding:1rem;border:1px solid #ced8cb;border-radius:12px;background:#fffdf8;color:#263b2f;box-shadow:0 12px 40px #24382b30;font:14px/1.5 system-ui,sans-serif}
+.action-popover-panel:popover-open {display:flex;flex-direction:column;align-items:stretch;gap:.65rem}
+.action-popover-panel::backdrop {background:transparent}
+.action-popover-panel button,.action-popover-panel a {text-align:left}
+.action-popover-panel label {display:flex;align-items:center;gap:.4rem}
+.library-actions {display:flex;align-items:center;gap:.75rem;margin:1rem 0}
+.settings-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;max-width:900px;margin:2rem 0}
+.settings-grid fieldset {min-width:0;padding:1.5rem;border:1px solid #d8dfd6;border-radius:12px;background:#fffdf9}
+.settings-grid legend {font-weight:650;color:#285b48;padding:0 .5rem}
+.settings-grid fieldset p {color:#657369;font-size:.9rem;margin:0 0 1.25rem}
+.settings-grid label {display:block;margin:1rem 0 .4rem;font-size:.9rem;font-weight:600}
+.settings-grid input,.settings-grid select {width:100%;min-height:42px}
+.song-chooser {max-width:850px}
+.song-chooser > label {display:block!important;margin:.5rem 0}
+.song-chooser > input {width:100%;margin-bottom:1rem}
+.song-chooser ul {list-style:none;padding:0;display:grid;gap:.6rem}
+.song-chooser li a {display:flex;gap:1rem;align-items:center;padding:1rem;background:#fffdf9;border:1px solid #d8dfd6;border-radius:10px;text-decoration:none}
+.song-chooser li a strong {flex:1}
+.song-chooser li a:hover {background:#eaf0e5}
+@media(max-width:650px){.settings-grid {grid-template-columns:1fr;gap:1rem;margin:1rem 0}.settings-grid fieldset {padding:1rem}.song-chooser li a {flex-wrap:wrap}}
