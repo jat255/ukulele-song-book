@@ -108,3 +108,17 @@ hint dismissal; corrected the test sequence, then reran the whole Chromium
 suite. Visually inspected the synthetic unclipped hint and Am/D overview.
 Final inline review found no remaining critical/important task finding.
 Existing physical-phone, Firefox, real-PDF and live-provider limits remain.
+
+## Sign-in styling
+
+The unauthenticated and loading branches bypassed the workspace class, so
+workspace styles never applied. They now use the shared cream/green theme with
+a centered responsive card, vertically spaced password form, prominent submit
+button, visible focus styles and inline error feedback associated with the field.
+The regression failed against the bare page before implementation. Coverage
+includes 1280/390/320px card bounds and wrong-password feedback/field clearing.
+Sign-in final verification: full Chromium 90 passed (28.3s), focused WebKit
+2 passed (4.9s), units 5+26 passed, typecheck/build/diff checks passed. Desktop
+and phone synthetic error-state screenshots visually inspected. Inline review
+found no remaining task issue. Physical-phone/Firefox and prior corpus/PDF/
+provider limits remain unchanged.

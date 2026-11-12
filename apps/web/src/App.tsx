@@ -47,8 +47,8 @@ export function App() {
     const response = await fetch('/api/session', {method:'DELETE', headers:{'X-CSRF-Token':session.csrf}});
     if (response.ok) {try{if(removeLocal)await removeAllDownloads();}catch{setError('Signed out, but could not remove all private downloads from this device.');}finally{setSession(null);setConfirmLogout(false);}} else setError('Unable to sign out.');
   }
-  if (loading) return <main>Loading…</main>;
-  if (!session) return <main><h1>Sign in</h1><form onSubmit={login}><label htmlFor="password">Password</label> <input id="password" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required /><button type="submit">Sign in</button></form>{error && <p role="alert">{error}</p>}</main>;
+  if (loading) return <main className="workspace auth-page"><div className="auth-card"><p className="auth-brand">Songbook</p><p role="status">Loading…</p></div></main>;
+  if (!session) return <main className="workspace auth-page"><div className="auth-card"><p className="auth-brand">Songbook</p><h1>Sign in</h1><p className="auth-intro">Open your private songbook.</p><form onSubmit={login}><label htmlFor="password">Password</label><input id="password" type="password" autoComplete="current-password" aria-describedby={error ? 'sign-in-error' : undefined} value={password} onChange={e => setPassword(e.target.value)} required />{error && <p id="sign-in-error" className="auth-error" role="alert">{error}</p>}<button type="submit">Sign in</button></form></div></main>;
   const id = new URLSearchParams(location.search).get('id');
   const arrangementId = ['/edit','/print','/player'].includes(location.pathname) ? id : null;
   if(!session.csrf && (location.pathname==='/edit' || location.pathname==='/imports' || location.pathname==='/set-print'))return <main><p>{location.pathname==='/edit' ? 'A connection is required for editing.' : 'A connection is required for this action.'}</p></main>;
