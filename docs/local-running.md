@@ -47,3 +47,9 @@ with `uv run songbook auth set-password`, and start `uv run songbook serve`
 and `uv run songbook worker` in separate terminals with the same
 `SONGBOOK_LIBRARY_ROOT`. `SONGBOOK_WORKER_REQUIRED=true` makes readiness depend
 on the worker heartbeat. See the README for test commands.
+
+AI services can also be configured from **Settings → Configure AI conversion**,
+including OpenAI-compatible image endpoints. Saved settings override the legacy
+Anthropic environment variables for both API and worker. Read [AI conversion](ai-conversion.md)
+for key storage, explicit page authorization, synthetic connection testing,
+endpoint/model compatibility and archive-restore requirements.

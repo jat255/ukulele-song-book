@@ -1,7 +1,6 @@
 """Single local worker for persisted import jobs."""
 
 import fcntl
-import os
 import threading
 import time
 import uuid
@@ -64,19 +63,21 @@ def run_once(jobs: ImportJobs, worker_id: str, provider=None, pdf_jobs=None) -> 
 
 def run_worker(jobs: ImportJobs) -> None:
     worker_id = str(uuid.uuid4())
-    provider = None
-    if os.environ.get("SONGBOOK_ALLOW_EXTERNAL_AI") == "true":
-        from .providers.anthropic import AnthropicProvider
-
-        key = os.environ.get("ANTHROPIC_API_KEY", "")
-        model = os.environ.get("SONGBOOK_ANTHROPIC_MODEL", "")
-        if key and model:
-            provider = AnthropicProvider(key, model)
     from ..pdf.jobs import PdfJobs
+    from .provider_settings import make_provider
 
     pdf_jobs = PdfJobs(jobs.store)
     with (jobs.store.root / ".worker.lock").open("a+b") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         while True:
-            if not run_once(jobs, worker_id, provider, pdf_jobs):
+            try:
+                provider = make_provider(jobs.store)
+            except (ValueError, OSError, KeyError, TypeError):
+                provider = None
+            try:
+                handled = run_once(jobs, worker_id, provider, pdf_jobs)
+            finally:
+                if provider is not None:
+                    getattr(provider, "adapter", provider).client.close()
+            if not handled:
                 time.sleep(5)

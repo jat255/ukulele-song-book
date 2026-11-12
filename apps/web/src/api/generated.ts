@@ -521,6 +521,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/provider/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings */
+        get: operations["get_settings_api_provider_settings_get"];
+        /** Put Settings */
+        put: operations["put_settings_api_provider_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/provider/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Connection */
+        post: operations["test_connection_api_provider_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/session": {
         parameters: {
             query?: never;
@@ -961,6 +996,26 @@ export interface components {
              */
             paper: "Letter" | "A4";
         };
+        /** ProviderEdit */
+        ProviderEdit: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Base Url */
+            base_url: string;
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /** Model */
+            model: string;
+            /** Name */
+            name: string;
+            /** Protocol */
+            protocol: string;
+            /** Revision */
+            revision: string;
+        };
         /** RestoreRequest */
         RestoreRequest: {
             /** Revision */
@@ -1036,6 +1091,16 @@ export interface components {
             arrangements?: components["schemas"]["KnownRevision"][];
             /** Setlists */
             setlists?: components["schemas"]["KnownRevision"][];
+        };
+        /** TestRequest */
+        TestRequest: {
+            /**
+             * Authorize Synthetic
+             * @default false
+             */
+            authorize_synthetic: boolean;
+            /** Revision */
+            revision: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -2209,6 +2274,92 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    get_settings_api_provider_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    put_settings_api_provider_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_connection_api_provider_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

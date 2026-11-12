@@ -179,3 +179,48 @@ Imports final verification: full Chromium 94 passed (27.5s), focused WebKit
 Acknowledgement regression RED→GREEN; final inline review clean after that fix.
 All import fixtures and screenshots used synthetic material. No physical-phone,
 Firefox, real-page visual or live-AI verification claim is added.
+
+## AI conversion service settings
+
+Implemented Settings → Configure AI conversion with one service name, protocol,
+base URL, image-capable model, server-owned key retain/replace/remove, enabled
+state, NVIDIA/Anthropic presets, save/cancel, and explicit synthetic connection
+test. OpenAI-compatible requests use inline PNG Chat Completions content; saving
+never sends anything. Import consent displays the configured service/model and
+still authorizes only selected pages. No live provider or collection request was
+made during implementation.
+
+Configuration uses owner-only atomic server-file replacement with fsync, revision
+conflicts and masked responses. Keys are not encrypted; the dialog/docs say so.
+Private config is excluded from portable exports and backups, verified by archive
+byte checks. A restore needs separate provider reprovisioning. Endpoint/protocol
+changes drop a retained key. API and worker share a loader; revision-bound
+provider identities fail old consent rather than redirecting queued pages.
+An already in-flight request cannot be recalled. Environment Anthropic settings
+remain a fallback only before an app configuration is saved.
+
+Tests use synthetic images and HTTP mock transports/browser API interception.
+They cover payload/model selection, malformed/truncated/unauthorized/redirect
+responses, auth/CSRF, key masking/removal, stale revisions, changed endpoint
+consent, configuration corruption, archive exclusion, explicit synthetic testing,
+keyboard focus and phone bounds. Inline final review found environment-loaded
+providers needed the same disable guard and malformed header keys needed rejection;
+both regressions failed before fixes. WebKit focus restoration also went RED→GREEN.
+See ../ai-conversion.md for usage, compatibility and credential/backup limits.
+AI settings final verification: full Python 224 passed (one existing Starlette
+deprecation warning), full Chromium 95 passed, focused WebKit dialog 1 passed,
+web/music unit 5+26 passed. Typecheck, production build, generated API schema,
+Ruff check/format and whitespace checks passed. Final desktop/phone dialog
+screenshots were inspected, including the WebKit focus restoration fix. All
+external HTTP behavior was mocked/intercepted; live NVIDIA/Anthropic conversion
+fidelity and account free-tier access remain unverified. Earlier real-PDF raster,
+correction-time/per-page counts and physical-device limits remain unchanged.
+
+Inline final review covered settings persistence, response masking, endpoint
+changes, worker reload/disable, request binding, output validation, explicit
+synthetic testing, archive exclusions, browser focus and errors. Fixed the
+legacy-environment disable guard and invalid header keys via RED→GREEN tests.
+No remaining critical/important task finding. One deliberate compatibility
+choice accepts provider-returned versioned model IDs, recording the actual ID;
+a structured response does not independently prove which remote model ran.
+HTTP custom endpoints are limited to loopback; remote LAN services require HTTPS.

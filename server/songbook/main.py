@@ -2,7 +2,6 @@
 
 import hashlib
 import ipaddress
-import os
 import sqlite3
 import tempfile
 import threading
@@ -34,6 +33,7 @@ from .api.library import router as library_router
 from .api.pdfs import router as pdf_router
 from .api.preferences import initialize as initialize_preferences
 from .api.preferences import router as preferences_router
+from .api.provider import router as provider_router
 from .api.schemas import (
     ArrangementResponse,
     EditRequest,
@@ -73,6 +73,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.pdf_lock = _pdf_lock
     initialize_preferences(store.database)
     initialize_downloads(store)
+    app.include_router(provider_router)
     app.include_router(downloads_router)
     app.include_router(exports_router)
     app.include_router(imports_router)
@@ -172,16 +173,12 @@ def create_app(settings: Settings) -> FastAPI:
 
     @app.get("/api/provider")
     def provider_status(principal: Principal = _session_dependency):
-        model = os.environ.get("SONGBOOK_ANTHROPIC_MODEL", "")
-        configured = bool(model and os.environ.get("ANTHROPIC_API_KEY"))
-        return {
-            "provider": "anthropic",
-            "model": model or None,
-            "configured": configured,
-            "available": configured
-            and os.environ.get("SONGBOOK_ALLOW_EXTERNAL_AI") == "true",
-            "cost_estimate": None,
-        }
+        from .imports.provider_settings import provider_status
+
+        try:
+            return provider_status(store)
+        except (ValueError, OSError, KeyError, TypeError):
+            raise HTTPException(503, detail="Provider settings unavailable") from None
 
     @app.post("/api/session", response_model=SessionResponse)
     def login(body: LoginRequest, request: Request, response: Response):

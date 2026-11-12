@@ -121,3 +121,11 @@ crop, source-named queue and side-by-side draft review. Fixed acknowledgement
 carry-over between PDF drafts with RED→GREEN regression. Chromium94, focused
 WebKit4, units5+26, typecheck/build/diff passed; synthetic UI screenshots and
 inline final review completed. AI remains disabled; no private pages submitted.
+
+AI settings implementation: Settings modal, OpenAI-compatible/NVIDIA and
+Anthropic configuration, masked owner-only server credentials, revision-bound
+worker provider selection, explicit synthetic connection test and preserved
+per-import authorization. Final Python224, Chromium95, focused WebKit1, unit
+5+26, typecheck/build/schema/Ruff/diff passed. No live provider request made.
+Keys are not encrypted and are excluded from library archives; see ai-conversion.md.
+No deployment or CI access; previous fidelity/device limits remain.

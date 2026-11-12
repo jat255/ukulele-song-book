@@ -27,3 +27,8 @@ Operator environment variables, provider credentials and source-root mappings
 are outside the managed library and must be reprovisioned separately; restore
 does not trust machine-specific input paths. Secure backups as private data,
 test restores periodically, and never publish them as static web content.
+
+AI provider settings saved in the app (`.ai-provider.json`) are intentionally
+excluded from both archive types, including their credentials and endpoint.
+Re-enter them in Settings after restore, or protect and restore that owner-only
+file separately. It is not encrypted; do not include it in portable music exports.

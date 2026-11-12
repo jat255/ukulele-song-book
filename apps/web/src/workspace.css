@@ -158,3 +158,29 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .import-preview .tab {max-width:100%;overflow-x:auto}
 @media(max-width:800px){.import-review-grid {grid-template-columns:minmax(0,1fr)}.import-originals {max-height:45vh}.import-upload,.import-folder {padding:1rem}.import-queue th,.import-queue td {padding:.6rem}.import-queue table {min-width:420px}}
 .workspace .import-submit button:hover {background:#1e4938}
+.ai-settings {max-width:900px;padding:1.5rem;border:1px solid #d8dfd2;border-radius:12px;background:#fffdf9;margin:1.5rem 0}
+.ai-settings h3 {margin:0 0 .5rem;color:#35543f}
+.ai-settings p {font-size:.9rem;color:#61705f;max-width:45rem}
+.ai-settings-dialog {width:min(720px,calc(100vw - 2rem));max-height:calc(100dvh - 2rem);box-sizing:border-box;padding:1.75rem;border:1px solid #d8dfd2;border-radius:16px;background:#fffdf8;color:#263b2f;box-shadow:0 20px 70px #0004;font:15px/1.5 system-ui,sans-serif}
+.ai-settings-dialog::backdrop {background:#1e302a88;backdrop-filter:blur(3px)}
+.ai-dialog-heading {display:flex;justify-content:space-between;align-items:start;gap:1rem}
+.ai-dialog-heading h2 {font-family:Georgia,serif;margin:.2rem 0}
+.ai-dialog-heading > button {font-size:1.5rem;padding:0 .65rem;background:transparent}
+.ai-settings-dialog fieldset {border:0;padding:0;margin:0;min-width:0}
+.ai-presets {display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin:1.25rem 0}
+.ai-presets > span {font-size:.8rem;color:#61705f;margin-right:.4rem}
+.ai-fields {display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.ai-fields > label {display:flex;flex-direction:column;gap:.35rem;font-size:.85rem;font-weight:600;min-width:0;margin:0}
+.ai-fields input,.ai-fields select {width:100%;box-sizing:border-box;min-height:42px}
+.ai-field-wide {grid-column:1/-1}
+.ai-fields small,.ai-test small {font-weight:400;color:#697763;font-size:.78rem}
+.ai-checkbox {display:flex;align-items:center;gap:.4rem;margin:1rem 0;font-size:.85rem}
+.ai-settings-dialog .ai-credential-note {font-size:.78rem;background:#edf1e7;padding:.75rem;border-radius:8px}
+.ai-test {border-top:1px solid #d8dfd2;padding-top:.5rem;margin-top:1rem}
+.ai-test small {display:block;margin-bottom:.65rem}
+.ai-dialog-actions {display:flex;gap:.6rem;justify-content:flex-end;border-top:1px solid #d8dfd2;padding-top:1rem;margin-top:1.25rem}
+.ai-dialog-actions button:first-child {background:#285b48;color:white}
+.ai-settings button:disabled {opacity:.5;cursor:default}
+@media(max-width:600px){.ai-settings-dialog {padding:1rem}.ai-fields {grid-template-columns:1fr}.ai-settings {padding:1rem}}
+.ai-fields input,.ai-fields select {font-weight:400;font-size:.95rem}
+.ai-fields select {appearance:none;padding-right:2rem;background-image:linear-gradient(45deg,transparent 50%,#52674d 50%),linear-gradient(135deg,#52674d 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 12px) 50%;background-size:4px 4px;background-repeat:no-repeat}
