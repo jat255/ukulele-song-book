@@ -21,3 +21,5 @@ test-results
 **/*.zip
 IMPLEMENTATION_PROMPT.md
 RESUME_SONGBOOK_IMPLEMENTATION.md
+**/.ai-provider.json
+**/.ai-provider-*

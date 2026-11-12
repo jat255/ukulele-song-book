@@ -9,3 +9,6 @@ dist/
 .env
 test-results/
 playwright-report/
+# Private AI service credentials, regardless of the configured library root.
+**/.ai-provider.json
+**/.ai-provider-*
