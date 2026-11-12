@@ -84,3 +84,27 @@ to the earlier review, not a new backend verification claim.
 Focused WebKit verification of the new chooser, controls, chord toggle, popover
 geometry/dismissal and contextual navigation: 2 passed (4.6s). This is not a
 full WebKit/offline suite or a Firefox/physical-phone claim.
+
+## Capo, tuning removal and chord hints
+
+- Reproduced the capo field at 24.5px wide. It now spans a full control row;
+  redundant native spinners are hidden while numeric keyboard input remains.
+  The regression checks a two-digit value at 1440, 390 and 320px widths.
+- Removed High G / Low G controls and help from player and default settings.
+  Existing serialized tuning data remains readable for compatibility.
+- Reproduced clipping with a short synthetic song: hit-testing the lower part
+  of the visible-looking hint hit the page instead. Hints now render in a body
+  portal with fixed positioning and viewport collision handling. Hover, focus,
+  Escape, and pointer movement into the hint are covered; scroll/resize dismiss.
+- Slash-bass validation incorrectly excluded bass notes outside the named triad.
+  It now includes that note and requires it to be the lowest sounding pitch.
+  Unit tests verify complete pitch sets and bass for Am/D, C/D and G/B and reject
+  an authored Am shape mislabeled Am/D. No simplified or guessed bass diagram
+  is substituted when an exact four-string voicing is unavailable.
+Final follow-up verification: Chromium 89 passed (28.1s), focused WebKit 4
+passed (5.7s), web/music unit suites 5 +26 passed, typecheck/build and diff
+whitespace checks passed. A resize/refocus assertion initially raced deliberate
+hint dismissal; corrected the test sequence, then reran the whole Chromium
+suite. Visually inspected the synthetic unclipped hint and Am/D overview.
+Final inline review found no remaining critical/important task finding.
+Existing physical-phone, Firefox, real-PDF and live-provider limits remain.

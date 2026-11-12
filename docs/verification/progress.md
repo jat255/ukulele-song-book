@@ -103,3 +103,9 @@ Final Chromium suite: 87 passed; unit suite: 5 web +25 music passed;
 production build, typecheck and diff whitespace checks passed. Inline review
 caught and fixed setlist-ID leakage into arrangement navigation (RED→GREEN).
 See review-comments.md for details and preserved validation limits.
+
+Capo/tuning/hint follow-up: full-row capo and spinner removal, removed high/low-G
+UI, portal chord hints and correct non-triad slash-bass voicings. Final Chromium
+89 passed, focused WebKit 4 passed, web/music unit 5+26 passed; typecheck/build
+and diff check passed. Screenshot and inline final review completed. Prior
+corpus/provider/physical-device limits unchanged.

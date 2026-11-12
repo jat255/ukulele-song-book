@@ -1,5 +1,5 @@
 import {resolveDiagram} from '../../../../packages/music/src/diagrams';
-import {ChordDiagram} from '../features/player/ChordDiagram';
+import {ChordHint} from '../features/player/ChordHint';
 import React from 'react';
 import type {MusicBlock,MusicDocument,PerformanceSettings} from '../../../../packages/music/src/model';
 import './music.css';
@@ -9,7 +9,7 @@ function renderBlock(block:MusicBlock,mode:'play'|'print',document:MusicDocument
     if(!segment.chord) return <span className="lyric-fragment" key={i}>{segment.lyric}</span>;
     const match=segment.lyric.match(/^(\s*\S+)([\s\S]*)$/);
     const first=match?.[1] ?? segment.lyric, rest=match?.[2] ?? '';
-    return <React.Fragment key={i}><span className={`segment${segment.lyric.trim() ? "" : " segment--empty"}`} data-chord={segment.chord}><span className="chord" tabIndex={mode==='play' ? 0 : undefined}>{segment.chord}{mode==='play' && <span className="chord-popover"><ul><ChordDiagram chord={segment.chord} diagram={resolveDiagram(segment.chord,performance.tuning,document.definitions)}/></ul></span>}</span><span>{first || '\u00a0'}</span></span><span className="lyric-fragment">{rest}</span></React.Fragment>;
+    return <React.Fragment key={i}><span className={`segment${segment.lyric.trim() ? "" : " segment--empty"}`} data-chord={segment.chord}>{mode==='play' ? <ChordHint chord={segment.chord} diagram={resolveDiagram(segment.chord,performance.tuning,document.definitions)}/> : <span className="chord">{segment.chord}</span>}<span>{first || '\u00a0'}</span></span><span className="lyric-fragment">{rest}</span></React.Fragment>;
   })}</div>;
   if(block.kind==='tab') {
     if (mode==='play' || !block.groups.length) return <pre data-testid="tab" className="tab">{block.text}</pre>;

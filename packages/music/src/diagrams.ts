@@ -9,7 +9,10 @@ function required(chord:string):{classes:Set<number>;bass:number|null}|null {
   if (!match || note[match[1]] === undefined || (match[3] && note[match[3]] === undefined)) return null;
   const extra:Record<string,number[]>={dim:[0,3,6],aug:[0,4,8],sus2:[0,2,7],sus4:[0,5,7],'6':[0,4,7,9],m6:[0,3,7,9]};
   const intervals=extra[match[2]] ?? (match[2] === 'm' ? [0,3,7] : match[2] === 'm7' ? [0,3,7,10] : match[2] === '7' ? [0,4,7,10] : match[2] === 'maj7' ? [0,4,7,11] : [0,4,7]);
-  return {classes:new Set(intervals.map(value => (note[match[1]]+value)%12)),bass:match[3] ? note[match[3]] : null};
+  const classes=new Set(intervals.map(value => (note[match[1]]+value)%12));
+  const bass=match[3] ? note[match[3]] : null;
+  if(bass!==null)classes.add(bass);
+  return {classes,bass};
 }
 export function resolveDiagram(chord:string, tuning:'high-g'|'low-g', definitions:ChordDefinition[]):DiagramResult {
   const expected=required(chord);
