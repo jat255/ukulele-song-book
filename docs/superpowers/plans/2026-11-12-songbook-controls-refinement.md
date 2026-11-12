@@ -15,3 +15,9 @@ Follow-up: keep capo readable at narrow widths, remove high/low-G UI, fix clippe
 chord hints via a viewport-positioned portal, and correctly include non-triad
 slash bass notes in voicing validation. Preserve existing serialized tuning
 fields for compatibility; do not fabricate unplayable four-string chord shapes.
+
+Library follow-up: remove browser storage estimates and visible offline status;
+replace song cards with compact semantic rows (Favorite, Song, Artist, Tags,
+Actions). Keep optional offline diagnostics/actions under More and preserve
+existing caching and export behavior. Narrow screens scroll the table within
+its own labeled region rather than widening the page.

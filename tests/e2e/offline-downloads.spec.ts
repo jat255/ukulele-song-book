@@ -1,12 +1,12 @@
 import type {Locator} from '@playwright/test';
-async function openOffline(row:Locator){await row.waitFor();const menu=row.locator('.offline-actions');if(await menu.count() && !await menu.locator('[popover]').evaluate(el=>el.matches(':popover-open')))await menu.getByRole('button',{name:'Offline options',exact:true}).click();}
+async function openOffline(row:Locator){await row.waitFor();const menu=row.locator('.offline-actions');if(await menu.count() && !await menu.locator('[popover]').evaluate(el=>el.matches(':popover-open')))await menu.getByRole('button',{name:'More',exact:true}).click();}
 import {test,expect} from '@playwright/test';
 
 test('downloaded song opens and transposes after a cold offline reload', async ({page,context}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded', {exact:true})).toBeVisible();
   const href=await song.getByRole('link',{name:'Player Test',exact:true}).getAttribute('href');
@@ -26,7 +26,7 @@ test('reports incomplete after browser cache eviction', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{for(const name of await caches.keys())if(name.startsWith('songbook-private-'))await caches.delete(name);});
@@ -38,7 +38,7 @@ test('failed refresh preserves the previous verified download', async ({page}) =
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.route('**/api/downloads/arrangements/*',async route=>{
@@ -56,7 +56,7 @@ test('sign out removes private downloads by default', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Sign out',exact:true}).click();
@@ -95,7 +95,7 @@ test('reports incomplete after a required shell font is evicted', async ({page})
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{const shell=localStorage.getItem('songbook-active-shell')!;await (await caches.open(shell)).delete('/fonts/NotoSerif-Regular.ttf');});
@@ -107,7 +107,7 @@ test('cleanup failure after publishing a refresh leaves the new download intact'
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(()=>{const original=caches.delete.bind(caches);let failed=false;caches.delete=async name=>{if(!failed && name.startsWith('songbook-private-')){failed=true;throw new Error('cleanup failed');}return original(name);};});
@@ -121,7 +121,7 @@ test('startup reconciles an abandoned staged download', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{
@@ -138,7 +138,7 @@ test('offline editing requires connection and downloaded song can browser print'
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   const href=await song.getByRole('link',{name:'Player Test',exact:true}).getAttribute('href');
@@ -160,7 +160,7 @@ test('can include a verified original PDF explicitly', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
   await openOffline(song);await song.getByLabel('Include original PDF').check();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
@@ -172,7 +172,7 @@ test('removing a download makes it online-only again', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await openOffline(song);await song.getByRole('button',{name:'Remove download'}).click();
@@ -187,7 +187,7 @@ test('shared originals are deduplicated and survive removing one selection', asy
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
   await openOffline(song);await song.getByLabel('Include original PDF').check();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
@@ -208,7 +208,7 @@ test('offline library lists downloaded songs after a cold reload', async ({page,
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await context.setOffline(true);
@@ -222,7 +222,7 @@ test('a different library identity cannot read prior private downloads', async (
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.route('**/api/downloads/identity',route=>route.fulfill({json:{libraryId:'different-library',principalId:'owner'}}));
@@ -237,7 +237,7 @@ test('quota failure never publishes a partial download', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await page.evaluate(()=>{const original=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(...args){if(this.name==='selections')throw new DOMException('quota','QuotaExceededError');return original.apply(this,args);};});
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Download failed',{exact:true})).toBeVisible();
@@ -266,7 +266,7 @@ test('a song downloaded through a setlist is shown as available', async ({page})
   await page.getByRole('button',{name:'Download setlist'}).click();
   await expect(page.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.goto('/');
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
 });
 
@@ -274,7 +274,7 @@ test('a failed refresh does not replace the working offline shell', async ({page
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.route('**/api/downloads/arrangements/*',async route=>{const response=await route.fetch();const data=await response.json();data.snapshots[0].source+='corrupt';await route.fulfill({response,json:data});});
@@ -291,10 +291,10 @@ test('missing active shell makes all offline status incomplete', async ({page}) 
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
-  const other=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Browser Test',exact:true})}).first();
+  const other=page.getByRole('row').filter({has:page.getByRole('link',{name:'Browser Test',exact:true})}).first();
   await openOffline(other);await other.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(other);await expect(other.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{const name=localStorage.getItem('songbook-active-shell');if(name)await caches.delete(name);});
@@ -308,7 +308,7 @@ test('sign out removes originals when browser locks are unavailable', async ({pa
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
   await page.evaluate(()=>Object.defineProperty(navigator,'locks',{value:undefined,configurable:true}));
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
   await openOffline(song);await song.getByLabel('Include original PDF').check();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
@@ -323,7 +323,7 @@ test('sign-out reports local cleanup failure after revoking session', async ({pa
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(()=>{caches.delete=async()=>{throw new Error('blocked');};});
@@ -338,7 +338,7 @@ test('reports incomplete when a cached font is corrupted', async ({page}) => {
   await page.goto('/');
   await page.getByLabel('Password').fill('synthetic test password');
   await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{const name=localStorage.getItem('songbook-active-shell')!;await (await caches.open(name)).put('/fonts/NotoSerif-Regular.ttf',new Response('corrupt'));});
@@ -350,7 +350,7 @@ test('sign out removes shared leftovers after individual removal without locks',
   const {readFileSync}=await import('node:fs');const id=readFileSync('/private/tmp/songbook-auth-e2e-arrangement-id','utf8');
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
   await page.evaluate(()=>Object.defineProperty(navigator,'locks',{value:undefined,configurable:true}));
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
   await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();await openOffline(song);await song.getByRole('button',{name:'Remove download'}).click();
   await openOffline(song);await expect(song.getByText('Online only',{exact:true})).toBeVisible();
@@ -363,7 +363,7 @@ test('sign out removes shared leftovers after individual removal without locks',
 test('an explicitly downloaded original is accessible offline', async ({page,context}) => {
   const {readFileSync}=await import('node:fs');const id=readFileSync('/private/tmp/songbook-auth-e2e-arrangement-id','utf8');
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
   await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();
   await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();await context.setOffline(true);await page.goto(`/player?id=${id}`);
   const link=page.getByRole('link',{name:'Open downloaded original'});await expect(link).toBeVisible();
@@ -373,7 +373,7 @@ test('an explicitly downloaded original is accessible offline', async ({page,con
 
 test('service worker update preserves verified downloads', async ({page,context}) => {
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();
   await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   const href=await song.getByRole('link',{name:'Player Test',exact:true}).getAttribute('href');
   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js?version=2');await new Promise<void>(resolve=>{if(navigator.serviceWorker.controller?.scriptURL.includes('version=2'))resolve();else navigator.serviceWorker.addEventListener('controllerchange',()=>resolve(),{once:true});});});
@@ -383,7 +383,7 @@ test('service worker update preserves verified downloads', async ({page,context}
 test('sign-out cleanup cannot delete an asset another tab is publishing', async ({page,context}) => {
   const {readFileSync}=await import('node:fs');const id=readFileSync('/private/tmp/songbook-auth-e2e-arrangement-id','utf8');
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   const other=await context.newPage();await other.goto('/');
   await page.evaluate(async()=>{const api=await import('/src/offline/downloads.ts');const real=caches.delete.bind(caches);(window as any).blocked=false;caches.delete=async name=>{if(name.startsWith('songbook-private-shared-') && !(window as any).blocked){(window as any).blocked=true;await new Promise<void>(resolve=>(window as any).releaseCleanup=resolve);}return real(name);};(window as any).cleanup=api.removeAllDownloads();});
   await expect.poll(()=>page.evaluate(()=>(window as any).blocked)).toBe(true);
@@ -408,7 +408,7 @@ test('setlist download requires saving pending edits', async ({page}) => {
 test('offline player cannot save a source variant', async ({page,context}) => {
   const {readFileSync}=await import('node:fs');const id=readFileSync('/private/tmp/songbook-auth-e2e-arrangement-id','utf8');
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await context.setOffline(true);await page.goto(`/player?id=${id}`);await page.getByRole('button',{name:'Save transposed variant'}).click();
   await expect(page.getByRole('alert')).toContainText('connection');
 });
@@ -434,7 +434,7 @@ test('setlist download reports a revision changed on the server', async ({page})
 test('cleanup serializes across tabs without browser locks', async ({page,context}) => {
   const {readFileSync}=await import('node:fs');const id=readFileSync('/private/tmp/songbook-auth-e2e-arrangement-id','utf8');
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   const other=await context.newPage();await other.goto('/');await page.evaluate(()=>Object.defineProperty(navigator,'locks',{value:undefined,configurable:true}));await other.evaluate(()=>Object.defineProperty(navigator,'locks',{value:undefined,configurable:true}));
   await page.evaluate(async()=>{const api=await import('/src/offline/downloads.ts');const real=caches.delete.bind(caches);(window as any).blocked=false;caches.delete=async name=>{if(name.startsWith('songbook-private-shared-') && !(window as any).blocked){(window as any).blocked=true;await new Promise<void>(resolve=>(window as any).releaseCleanup=resolve);}return real(name);};(window as any).cleanup=api.removeAllDownloads();});
   await expect.poll(()=>page.evaluate(()=>(window as any).blocked)).toBe(true);
@@ -451,7 +451,7 @@ test('cleanup serializes across tabs without browser locks', async ({page,contex
 test('refresh without originals removes an unreferenced shared original', async ({page}) => {
   const {readFileSync}=await import('node:fs');const id=readFileSync('/private/tmp/songbook-auth-e2e-arrangement-id','utf8');
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.locator('li').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
+  const song=page.locator('tr').filter({has:page.locator(`a[href="/player?id=${id}"]`)});
   await openOffline(song);await song.getByLabel('Include original PDF').check();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await openOffline(song);await song.getByLabel('Include original PDF').uncheck();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   const count=await page.evaluate(async()=>{let total=0;for(const name of await caches.keys())if(name.startsWith('songbook-private-shared-'))total+=(await (await caches.open(name)).keys()).length;return total;});expect(count).toBe(0);
@@ -459,7 +459,7 @@ test('refresh without originals removes an unreferenced shared original', async 
 
 test('sign-out can explicitly retain a local private copy', async ({page,context}) => {
   await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
-  const song=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
+  const song=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();await openOffline(song);await song.getByRole('button',{name:'Download for offline'}).click();await openOffline(song);await expect(song.getByText('Downloaded',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByText('Retained downloads remain private copies on this device.')).toBeVisible();await page.getByLabel('Remove private downloads').uncheck();await page.getByRole('button',{name:'Confirm sign out'}).click();await expect(page.getByRole('heading',{name:'Sign in'})).toBeVisible();
   await context.setOffline(true);await page.goto('/');await expect(page.getByRole('link',{name:'Player Test',exact:true})).toBeVisible();
 });

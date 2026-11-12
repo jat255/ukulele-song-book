@@ -85,3 +85,25 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .auth-card button[type=submit] {width:100%;min-height:46px;margin-top:.6rem;background:#285b48;color:#fff;border-color:#285b48;font-weight:650}
 .auth-card button[type=submit]:hover {background:#1e4938}
 .auth-error {margin:.1rem 0;padding:.65rem .75rem;border:1px solid #e2c4b6;border-radius:6px;background:#fff1e9;color:#883f28;font-size:.9rem}
+.library-filters {display:flex;align-items:end;flex-wrap:wrap;gap:.8rem 1.25rem;margin:1.25rem 0}
+.library-filters > div {display:flex;flex-direction:column;gap:.35rem}
+.library-filters > div:first-child {flex:1 1 18rem}
+.library-filters > label {padding-bottom:.45rem;white-space:nowrap;font-size:.9rem}
+.library-filters label {font-size:.85rem;color:#526552}
+.library-table-scroll {max-width:100%;overflow-x:auto;border:1px solid #d8dfd2;border-radius:10px;background:#fffdf9}
+.library-table {width:100%;border-collapse:collapse;text-align:left;font-size:.9rem}
+.library-table th,.library-table td {padding:.65rem .8rem;border-bottom:1px solid #e5e9df;vertical-align:middle}
+.library-table thead th {background:#edf1e7;color:#5b6e58;font-size:.72rem;letter-spacing:.04em;font-weight:650}
+.library-table tbody tr:last-child > * {border-bottom:0}
+.library-table tbody tr:hover {background:#f2f5ed}
+.library-table tbody th {min-width:12rem;font-weight:600}
+.library-table tbody th a {text-decoration:none}
+.library-table tbody th a:hover {text-decoration:underline}
+.library-table td {color:#61705f}
+.library-table .favorite-column {width:3rem;text-align:center}
+.library-table button {font-size:.85rem}
+.library-table .favorite-column button {border:0;background:transparent;font-size:1.15rem;padding:.2rem .4rem;color:#376b4d}
+.library-row-actions {display:flex;justify-content:flex-end;gap:.25rem;white-space:nowrap}
+.source-only-label {display:block;font-size:.72rem;color:#6b7965;font-weight:400;margin-top:.2rem}
+.library-empty {padding:1rem;margin:0;color:#61705f}
+@media(max-width:600px){.library-filters > div {flex:1 1 100%}.library-table th,.library-table td {padding:.55rem .65rem}.library-table {min-width:680px}}

@@ -18,12 +18,12 @@ test('song destinations, grouped controls, chord toggle and floating actions',as
  await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Tools',exact:true})).toBeFocused();
  await page.setViewportSize({width:1440,height:1000});
  await page.goto('/settings');await expect(page.getByRole('group',{name:'Playing defaults'})).toBeVisible();
- await page.screenshot({path:'.local/review/second-settings.png'});await page.goto('/');const row=page.getByRole('listitem').filter({has:page.getByRole('link',{name:'Browser Test',exact:true})}).first();
+ await page.screenshot({path:'.local/review/second-settings.png'});await page.goto('/');const row=page.getByRole('row').filter({has:page.getByRole('link',{name:'Browser Test',exact:true})}).first();
  const before=await row.boundingBox();await row.getByRole('button',{name:'Export',exact:true}).click();
  await expect(row.getByRole('button',{name:'Export ChordPro'})).toBeVisible();expect((await row.boundingBox())!.height).toBe(before!.height);
  await page.screenshot({path:'.local/review/second-menu.png'});await page.keyboard.press('Escape');await expect(row.getByRole('button',{name:'Export ChordPro'})).toBeHidden();
  await row.getByRole('button',{name:'Export',exact:true}).click();await page.getByRole('heading',{name:'Library',exact:true}).click();await expect(row.getByRole('button',{name:'Export ChordPro'})).toBeHidden();
- await page.setViewportSize({width:390,height:600});await row.getByRole('button',{name:'Offline options',exact:true}).click();
+ await page.setViewportSize({width:390,height:600});await row.getByRole('button',{name:'More',exact:true}).click();
  const panel=row.locator('.offline-actions [popover]');await expect(panel).toBeVisible();const bounds=await panel.boundingBox();expect(bounds!.x).toBeGreaterThanOrEqual(0);expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(390);expect(bounds!.y+bounds!.height).toBeLessThanOrEqual(600);
 
 });

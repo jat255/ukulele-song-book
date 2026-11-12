@@ -109,3 +109,9 @@ UI, portal chord hints and correct non-triad slash-bass voicings. Final Chromium
 89 passed, focused WebKit 4 passed, web/music unit 5+26 passed; typecheck/build
 and diff check passed. Screenshot and inline final review completed. Prior
 corpus/provider/physical-device limits unchanged.
+
+Library table follow-up: storage estimates and visible offline status removed;
+compact semantic table with Favorite/Song/Artist/Tags/Actions and optional More
+popover. Full Chromium91, focused WebKit7, units5+26, typecheck/build/diff passed.
+Desktop/phone-emulation screenshots and inline final review completed. Existing
+corpus/provider/physical-device limitations retained.

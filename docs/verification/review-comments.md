@@ -122,3 +122,22 @@ Sign-in final verification: full Chromium 90 passed (28.3s), focused WebKit
 and phone synthetic error-state screenshots visually inspected. Inline review
 found no remaining task issue. Physical-phone/Firefox and prior corpus/PDF/
 provider limits remain unchanged.
+
+## Table library
+
+Removed the browser storage estimate and its estimate request. Replaced song
+cards with a semantic compact table: Favorite, Song, Artist, Tags and Actions.
+There is no offline-status column or visible row status. Automatic song caching
+continues; optional offline diagnostics/retry/removal live behind the secondary
+More popover. Search/tag/favorite/recent filters and standalone exports remain.
+Table headers and row headers are accessible; on phones the table scrolls within
+its labeled, keyboard-focusable region without widening the document. No sorting
+or data/storage migration was introduced. Test selectors now use semantic table
+rows; setlist list-item selectors remain unchanged.
+Final table verification: full Chromium 91 passed (28.3s), focused WebKit 7
+passed (5.7s), unit suites 5+26 passed, typecheck/build/diff checks passed.
+Regression checks semantic headers, compact row height, absent storage text,
+no visible Online only status, and document bounds at 1280/390/320px. Desktop
+and phone screenshots inspected; inline final review found no outstanding
+critical/important task issue. No backend/schema changes or new physical-device,
+Firefox, real-PDF or live-provider verification claim.

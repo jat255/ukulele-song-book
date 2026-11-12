@@ -26,3 +26,14 @@ test('sign-in uses a responsive songbook card and keeps errors visible',async({p
  await page.screenshot({path:'.local/review/sign-in-phone.png'});
  await page.setViewportSize({width:1280,height:800});await page.screenshot({path:'.local/review/sign-in-desktop.png'});
 });
+
+test('library presents compact song rows in a table without storage estimates',async({page})=>{
+ await page.goto('/');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
+ await expect(page.getByRole('table',{name:'Song library'})).toBeVisible();
+ for(const name of ['Song','Artist','Favorite','Tags','Actions'])await expect(page.getByRole('columnheader',{name,exact:true})).toBeVisible();
+ await expect(page.getByText(/Browser storage:|Storage estimate unavailable/)).toHaveCount(0);
+ await expect(page.getByText('Online only',{exact:true}).filter({visible:true})).toHaveCount(0);
+ const row=page.getByRole('row').filter({has:page.getByRole('link',{name:'Player Test',exact:true})}).first();await expect(row).toBeVisible();expect((await row.boundingBox())!.height).toBeLessThan(80);
+ for(const width of [1280,390,320]){await page.setViewportSize({width,height:800});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await page.screenshot({path:'.local/review/library-table-phone.png'});await page.setViewportSize({width:1280,height:800});await page.screenshot({path:'.local/review/library-table-desktop.png'});
+});
