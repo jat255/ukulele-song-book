@@ -578,3 +578,24 @@ def test_snapshot_checks_size_before_copying_large_managed_files(tmp_path, monke
     monkeypatch.setattr(export.shutil, "copyfile", unexpected_copy)
     with pytest.raises(ValueError):
         export_library(store, tmp_path / "archive.zip")
+
+
+def test_catalog_limit_is_enforced_while_reading_rows(tmp_path, monkeypatch):
+    import pytest
+
+    from server.songbook.portability import export
+    from server.songbook.storage.library import LibraryIndex
+
+    store = LibraryStore(tmp_path / "source")
+    song = store.create_arrangement(None, "{title: Synthetic}\n[C]Song", [], None)
+    library = LibraryIndex(store)
+    library.update_metadata(
+        song.id,
+        library.metadata(song.id)["revision"],
+        favorite=False,
+        tags=[],
+        notes="x" * 5000,
+    )
+    monkeypatch.setattr(export, "MAX_MANIFEST", 1000)
+    with pytest.raises(ValueError):
+        export._catalog(store.database)

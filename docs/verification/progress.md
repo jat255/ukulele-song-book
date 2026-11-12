@@ -83,3 +83,7 @@ songbook-m3-verification exec -T api songbook backup --output
 archive with `songbook restore --archive /input/backup.zip --destination
 /restore/library --mode backup` into a separate named volume. The local test
 credentials and generated artifacts are synthetic and are not included here.
+
+The final whole-branch review is in [branch-review.md](branch-review.md). Its
+export-catalog memory-bound fix passed a targeted regression and 41 focused
+portability, restore, and recovery tests after the consolidated run above.

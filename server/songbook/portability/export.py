@@ -148,11 +148,19 @@ def _catalog(database: Path) -> dict[str, list[dict]]:
     with sqlite3.connect(database) as db:
         db.row_factory = sqlite3.Row
         tables = _tables(db)
-        return {
-            table: [dict(row) for row in db.execute(query)]
-            for table, query in queries.items()
-            if table in tables
-        }
+        result: dict[str, list[dict]] = {}
+        total = 0
+        for table, query in queries.items():
+            if table not in tables:
+                continue
+            rows = result[table] = []
+            for row in db.execute(query):
+                item = dict(row)
+                total += len(json.dumps(item, ensure_ascii=True).encode())
+                if total > MAX_MANIFEST:
+                    raise ValueError("Library catalog exceeds archive limits")
+                rows.append(item)
+        return result
 
 
 def _archive(store: LibraryStore, destination: Path, mode: str) -> ExportManifest:
