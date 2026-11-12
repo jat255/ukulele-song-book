@@ -115,3 +115,9 @@ compact semantic table with Favorite/Song/Artist/Tags/Actions and optional More
 popover. Full Chromium91, focused WebKit7, units5+26, typecheck/build/diff passed.
 Desktop/phone-emulation screenshots and inline final review completed. Existing
 corpus/provider/physical-device limitations retained.
+
+Imports workspace follow-up: responsive upload/PDF-selection card, optional
+crop, source-named queue and side-by-side draft review. Fixed acknowledgement
+carry-over between PDF drafts with RED→GREEN regression. Chromium94, focused
+WebKit4, units5+26, typecheck/build/diff passed; synthetic UI screenshots and
+inline final review completed. AI remains disabled; no private pages submitted.

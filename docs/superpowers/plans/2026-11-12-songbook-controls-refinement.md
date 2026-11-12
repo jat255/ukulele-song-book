@@ -21,3 +21,8 @@ replace song cards with compact semantic rows (Favorite, Song, Artist, Tags,
 Actions). Keep optional offline diagnostics/actions under More and preserve
 existing caching and export behavior. Narrow screens scroll the table within
 its own labeled region rather than widening the page.
+
+Imports follow-up: separate upload, PDF pages/optional crop, source-labeled queue
+and side-by-side draft review; preserve explicit external-AI authorization and
+review-only drafts. Verify synthetic PDF/ChordPro save/accept flows, responsive
+bounds, and independent warning acknowledgement when advancing drafts.

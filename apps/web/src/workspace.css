@@ -112,3 +112,49 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .workspace-header > button {flex-shrink:0;white-space:nowrap;font-size:.85rem;background:transparent}
 .workspace-header + [role=dialog] {padding:1rem;margin:0 0 1rem;border:1px solid #d8dfd2;border-radius:10px;background:#fffdf9}
 .workspace-header + [role=dialog] p {margin-top:0}
+.imports-intro {color:#61705f;max-width:48rem;margin-bottom:1.5rem}
+.import-upload,.import-folder {max-width:880px;padding:1.5rem;border:1px solid #d8dfd2;border-radius:12px;background:#fffdf9;margin-bottom:2rem}
+.imports-page h3 {margin:0 0 1rem;color:#35543f;font-size:1.05rem}
+.import-field {display:flex;flex-direction:column;gap:.45rem;min-width:0;margin-bottom:1rem}
+.import-field > label {font-size:.85rem;font-weight:600;line-height:1.5}
+.import-field input,.import-field select {width:100%;min-width:0;min-height:42px}
+.import-field input[type=file] {font-size:.9rem;white-space:normal}
+.import-field small,.import-submit small {font-size:.8rem;color:#697763;line-height:1.5}
+.import-upload fieldset {min-width:0;margin:1.25rem 0;padding:1rem;border:1px solid #dce3d5;border-radius:8px}
+.import-upload legend {padding:0 .4rem;font-size:.85rem;font-weight:650;color:#52674d}
+.import-advanced {font-size:.85rem}
+.import-advanced p {color:#697763}
+.import-submit {display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
+.import-submit button {background:#285b48;color:white;border-color:#285b48;padding:.6rem 1rem;font-weight:650}
+.import-submit button:disabled {opacity:.45;cursor:default}
+.import-ai,.import-message {padding:1rem;background:#edf1e7;border-radius:8px;margin:1rem 0}
+.import-queue {margin:2rem 0}
+.import-queue-heading {display:flex;align-items:baseline;gap:1rem}
+.import-queue-heading span {font-size:.8rem;color:#697763}
+.import-table-scroll {max-width:100%;overflow:auto;border:1px solid #d8dfd2;border-radius:10px;background:#fffdf9}
+.import-queue table {width:100%;border-collapse:collapse;text-align:left;font-size:.85rem}
+.import-queue th,.import-queue td {padding:.75rem 1rem;border-bottom:1px solid #e2e7db;vertical-align:middle}
+.import-queue thead th {font-size:.75rem;color:#61705f;background:#edf1e7}
+.import-queue tbody th {font-weight:550;overflow-wrap:anywhere}
+.import-queue td:last-child {white-space:nowrap}
+.import-queue td button,.import-queue td a {margin:.2rem .4rem .2rem 0}
+.import-state {display:inline-block;padding:.2rem .5rem;border-radius:5px;background:#edf1e7;color:#52674d;white-space:nowrap}
+.import-state--needs-review {background:#fff0d5;color:#81551d}
+.import-state--failed {background:#fff0e8;color:#8b452d}
+.import-queue td small {display:block;margin-top:.4rem}
+.import-table-scroll > p {padding:1rem;color:#697763}
+.import-review {border-top:1px solid #d8dfd2;padding-top:1.5rem}
+.import-source-links {display:flex;gap:1rem;margin:1rem 0}
+.import-review-grid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem;align-items:start}
+.import-review-grid--text {grid-template-columns:minmax(0,1fr)}
+.import-originals {min-width:0;max-height:80vh;overflow:auto;background:#e3e7dd;border-radius:8px;padding:.75rem}
+.import-originals img {display:block;width:100%;height:auto;margin-bottom:1rem;box-shadow:0 2px 8px #24382b20}
+.import-workbench {min-width:0}
+.import-workbench textarea {font:14px/1.6 monospace;min-height:22rem;resize:vertical}
+.import-review-actions {display:flex;flex-wrap:wrap;gap:.65rem;margin:1rem 0}
+.import-warnings {padding:1rem;background:#fff3dd;border:1px solid #ecdfbf;border-radius:8px;font-size:.85rem;margin:1rem 0;overflow-wrap:anywhere}
+.import-preview {padding:1rem;background:#fffdf9;border:1px solid #d8dfd2;border-radius:8px;max-height:65vh;overflow:auto}
+.import-preview h4 {margin:0 0 1rem;color:#61705f}
+.import-preview .tab {max-width:100%;overflow-x:auto}
+@media(max-width:800px){.import-review-grid {grid-template-columns:minmax(0,1fr)}.import-originals {max-height:45vh}.import-upload,.import-folder {padding:1rem}.import-queue th,.import-queue td {padding:.6rem}.import-queue table {min-width:420px}}
+.workspace .import-submit button:hover {background:#1e4938}

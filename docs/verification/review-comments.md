@@ -153,3 +153,29 @@ Sign-out final verification: full Chromium 92 passed (27.6s), focused WebKit
 5 passed (4.4s), unit suites 5+26 passed, typecheck/build/diff checks passed.
 Narrow-screen screenshot visually inspected; inline final review clean. Prior
 physical-device, Firefox, corpus/PDF and provider limitations remain unchanged.
+
+## Imports workspace
+
+Replaced the inline upload form with a spaced Add music card. PDF pages have
+a labeled group and examples; normalized crop coordinates are under Optional
+page crop rather than beside the primary upload action. ChordPro/PDF pairing
+and explicitly authorized AI selection remain available when applicable.
+Unavailable vision/cost chatter is omitted. Queue rows now show source filename,
+readable state and Review/Open song actions instead of anonymous state bullets;
+source names refresh as jobs do. Review places original pages beside the draft
+editor on desktop and stacks on phones, with bounded page/preview panes, a
+monospaced editor and grouped warning/save/accept controls.
+
+Regression reproduced the missing PDF field group before implementation.
+Synthetic desktop, phone and PDF review screenshots inspected. Final review
+also reproduced warning acknowledgement carrying into the next PDF draft;
+a regression failed while checked, then the auto-selection path was corrected
+to reset acknowledgement. The primary upload hover contrast was corrected
+from the screenshot review. No private PDF was opened or submitted externally.
+The Anthropic adapter remains optional/disabled in the demo; live provider
+quality and the earlier corpus/device limitations remain unverified.
+Imports final verification: full Chromium 94 passed (27.5s), focused WebKit
+4 passed (11.4s), unit suites 5+26 passed, final typecheck/build/diff passed.
+Acknowledgement regression RED→GREEN; final inline review clean after that fix.
+All import fixtures and screenshots used synthetic material. No physical-phone,
+Firefox, real-page visual or live-AI verification claim is added.
