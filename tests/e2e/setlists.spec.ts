@@ -7,7 +7,7 @@ test('creates, reorders, and plays repeated occurrences', async ({page}) => {
   await page.getByRole('button',{name:'Sign in'}).click();
   await page.getByLabel('Setlist title').fill('Rehearsal');
   await page.getByRole('button',{name:'Create setlist'}).click();
-  await page.getByLabel('Choose arrangement').selectOption({label:'Player Test'});
+  await page.getByLabel('Choose arrangement').selectOption({label:'Setlist Player Test'});
   await page.getByRole('button',{name:'Add to setlist'}).click();
   await page.getByRole('button',{name:'Add to setlist'}).click();
   await expect(page.getByTestId('set-occurrence')).toHaveCount(2);

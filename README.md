@@ -1,8 +1,9 @@
 # Private ukulele songbook
 
-The songbook is under development. The current milestone provides managed storage,
-a private API, and the beginning of the authenticated shell; import, library,
-player, printing, and offline workflows are not yet complete.
+The songbook provides a private managed library, reviewed imports, playing,
+setlists, printing, offline downloads, and local export and backup. See
+[local running](docs/local-running.md) for the container setup and
+[deployment readiness](docs/deployment-readiness.md) for remaining limits.
 
 For local development, install Python 3.12+, Node 22.12+, uv, and dependencies:
 

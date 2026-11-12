@@ -33,5 +33,7 @@ def settings_from_environment() -> Settings:
     ):
         raise ValueError("Invalid source-root configuration")
     return Settings(
-        library_root=root, source_roots={key: Path(value) for key, value in raw.items()}
+        library_root=root,
+        source_roots={key: Path(value) for key, value in raw.items()},
+        worker_required=os.environ.get("SONGBOOK_WORKER_REQUIRED") == "true",
     )

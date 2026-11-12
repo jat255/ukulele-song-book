@@ -1,0 +1,10 @@
+# Optional: set SONGBOOK_INPUT_DIR to a local directory before adding this file.
+services:
+  api:
+    environment:
+      SONGBOOK_SOURCE_ROOTS: '{"input":"/inputs"}'
+    volumes:
+      - type: bind
+        source: ${SONGBOOK_INPUT_DIR:?Set SONGBOOK_INPUT_DIR to a local input directory}
+        target: /inputs
+        read_only: true

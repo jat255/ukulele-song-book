@@ -42,6 +42,22 @@ player_song = app.state.store.create_arrangement(
     None,
 )
 Path("/private/tmp/songbook-auth-e2e-player-id").write_text(player_song.id)
+for index in range(5):
+    layout_song = app.state.store.create_arrangement(
+        None,
+        player_song.source.replace(
+            "{title: Player Test}", f"{{title: Player Test Layout {index}}}"
+        ),
+        [],
+        None,
+    )
+    Path(f"/private/tmp/songbook-auth-e2e-layout-{index}-id").write_text(layout_song.id)
+app.state.store.create_arrangement(
+    None,
+    player_song.source.replace("{title: Player Test}", "{title: Setlist Player Test}"),
+    [],
+    None,
+)
 performance_song = app.state.store.create_arrangement(
     None,
     player_song.source.replace("{title: Player Test}", "{title: Performance Test}"),

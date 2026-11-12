@@ -1,9 +1,9 @@
 import {test, expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 
-for (const viewport of [{width:1440,height:900}, {width:390,height:844}, {width:320,height:700}]) {
+for (const [index, viewport] of [{width:1440,height:900}, {width:390,height:844}, {width:320,height:700}].entries()) {
   test(`player keeps music visible at ${viewport.width}px`, async ({page}) => {
-    const id = readFileSync('/private/tmp/songbook-auth-e2e-player-id','utf8');
+    const id = readFileSync(`/private/tmp/songbook-auth-e2e-layout-${index}-id`,'utf8');
     await page.setViewportSize(viewport);
     await page.goto(`/player?id=${id}`);
     await page.getByLabel('Password').fill('synthetic test password');
@@ -25,7 +25,7 @@ for (const viewport of [{width:1440,height:900}, {width:390,height:844}, {width:
 }
 
 test('keeps requested text size and wide tab accessible on a narrow screen', async ({page}) => {
-  const id = readFileSync('/private/tmp/songbook-auth-e2e-player-id','utf8');
+  const id = readFileSync('/private/tmp/songbook-auth-e2e-layout-3-id','utf8');
   await page.setViewportSize({width:320,height:700});
   await page.goto(`/player?id=${id}`);
   await page.getByLabel('Password').fill('synthetic test password');
@@ -43,7 +43,7 @@ test('keeps requested text size and wide tab accessible on a narrow screen', asy
 });
 
 test('columns preserve source order and keep section headings with music', async ({page}) => {
-  const id = readFileSync('/private/tmp/songbook-auth-e2e-player-id','utf8');
+  const id = readFileSync('/private/tmp/songbook-auth-e2e-layout-4-id','utf8');
   await page.setViewportSize({width:1440,height:900});
   await page.goto(`/player?id=${id}`);
   await page.getByLabel('Password').fill('synthetic test password');
