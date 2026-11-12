@@ -4,6 +4,7 @@ import argparse
 import getpass
 import sys
 from dataclasses import replace
+from pathlib import Path
 
 from .config import settings_from_environment
 from .main import create_app
@@ -15,12 +16,40 @@ def main(argv: list[str] | None = None) -> int:
     auth = commands.add_parser("auth")
     auth.add_subparsers(dest="auth_command", required=True).add_parser("set-password")
     commands.add_parser("worker")
+    for command in ("export", "backup"):
+        archive = commands.add_parser(command)
+        archive.add_argument("--output", type=Path, required=True)
+    restore = commands.add_parser("restore")
+    restore.add_argument("--archive", type=Path, required=True)
+    restore.add_argument("--destination", type=Path, required=True)
+    restore.add_argument("--mode", choices=("portable", "backup"), required=True)
+    commands.add_parser("reindex")
     serve = commands.add_parser("serve")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     args = parser.parse_args(argv)
     settings = settings_from_environment()
     root = settings.library_root
+    if args.command == "restore":
+        from .portability.restore import restore_archive
+
+        restore_archive(args.archive, args.destination, args.mode)
+        return 0
+    if args.command in ("export", "backup", "reindex"):
+        from .storage.arrangements import LibraryStore
+
+        store = LibraryStore(root)
+        if args.command == "export":
+            from .portability.export import export_library
+
+            export_library(store, args.output)
+        elif args.command == "backup":
+            from .portability.backup import backup_library
+
+            backup_library(store, args.output)
+        else:
+            store.recover_pending_writes()
+        return 0
     if args.command == "auth":
         password = getpass.getpass("Password: ")
         confirmation = getpass.getpass("Confirm password: ")

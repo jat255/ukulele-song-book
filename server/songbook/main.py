@@ -27,6 +27,8 @@ from .api.auth import (
 )
 from .api.downloads import initialize as initialize_downloads
 from .api.downloads import router as downloads_router
+from .api.exports import ExportJobs
+from .api.exports import router as exports_router
 from .api.imports import router as imports_router
 from .api.library import router as library_router
 from .api.pdfs import router as pdf_router
@@ -67,10 +69,12 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.library = LibraryIndex(store)
     app.state.setlists = SetlistStore(store)
     app.state.pdf_jobs = PdfJobs(store)
+    app.state.export_jobs = ExportJobs(store)
     app.state.pdf_lock = _pdf_lock
     initialize_preferences(store.database)
     initialize_downloads(store)
     app.include_router(downloads_router)
+    app.include_router(exports_router)
     app.include_router(imports_router)
     app.include_router(library_router)
     app.include_router(preferences_router)

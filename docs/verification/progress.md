@@ -40,3 +40,12 @@ progress. See [offline verification](offline.md) for browser versions,
 reconciliation behavior and the physical-device limitations. These results do
 not establish portability, backup/restore, local container operation, or
 milestone completion; those require their own gates.
+
+M3 portability work includes a synthetic backup restored to a separate local
+library. Authentication, retained original bytes, metadata, search, and two
+ordered occurrences were checked; the restored song produced a one-page PDF.
+A standalone synthetic ChordPro export was also opened by the independent
+ChordPro command-line renderer. These are synthetic checks, not evidence of
+visual inspection of real-song raster pages or physical-phone behavior.
+Portable extraction drafts remain review-only; live vision fidelity and
+per-page correction times remain unmeasured.
