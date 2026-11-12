@@ -23,3 +23,31 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 @media (max-width:600px) {.workspace {padding:1rem}.workspace nav {margin-bottom:1.25rem}.library > input {width:100%;margin-right:0}.library li {align-items:center}.library li > a:first-child {flex-basis:70%}}
 
 .export-actions {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.4rem}
+.workspace {max-width:1440px}
+.workspace summary {cursor:pointer;color:#285b48;font-weight:600;padding:.4rem}
+.workspace details[open] {background:#fffdf9;border:1px solid #d8dfd6;border-radius:8px;padding:.5rem}
+.export-actions {position:relative}
+.export-actions[open] {display:flex;flex-wrap:wrap;gap:.4rem}
+.workspace section > h2 {font-family:Georgia,serif;color:#285b48}
+.workspace section > label {display:inline-block;margin-top:.65rem}
+.workspace textarea {display:block;width:100%;min-height:8rem;line-height:1.6}
+.editor-columns {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2rem;align-items:start}
+.editor-form {min-width:0}
+.editor-form > a {display:inline-block;margin:0 1rem 1rem 0}
+.editor-form > label,.editor-form section > label {display:block;margin:.65rem 0 .3rem}
+.editor-preview {min-width:0;background:#fffdf9;padding:1rem;border:1px solid #d8dfd6;border-radius:10px;max-height:80vh;overflow:auto}
+.editor-preview h3 {margin-top:0}
+.editor-preview .tab {max-width:100%;overflow-x:auto}
+.arrangement-editor #source-editor {min-height:60vh;font-family:monospace;font-size:.9rem;tab-size:2;margin-bottom:1rem}
+.workspace section > ol {padding-left:1.5rem}
+.workspace section > ol > li {padding:1rem;margin:.65rem 0;background:#fffdf9;border:1px solid #d8dfd6;border-radius:8px}
+.workspace li button {margin:.2rem}
+.print-controls {background:#eaf0e5;border:1px solid #d8dfd6;border-radius:10px;padding:1rem;margin:1rem 0}
+.print-controls label {display:flex;align-items:center;gap:.4rem}
+.pdf-pages {align-items:center;background:#dde1d8;padding:1.5rem;border-radius:10px}
+.pdf-pages img {width:min(100%,816px)}
+@media(max-width:800px){.editor-columns {display:block}.editor-preview {margin-top:1rem}.arrangement-editor #source-editor {min-height:40vh}}
+.setlists > ul {padding:0;list-style:none;display:grid;gap:.6rem}
+.setlists > ul > li {padding:1rem;background:#fffdf9;border:1px solid #d8dfd6;border-radius:8px}
+.setlists > label {display:block!important}
+.setlists > input,.setlists > select {margin-bottom:.8rem;min-width:min(100%,20rem)}

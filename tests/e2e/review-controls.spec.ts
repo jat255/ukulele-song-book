@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+import {readFileSync} from 'node:fs';
+test('review controls, hover shapes and automatic offline save',async({page})=>{
+ let id=readFileSync('/private/tmp/songbook-auth-e2e-performance-id','utf8');
+ await page.goto('/player?id='+id);
+ await page.getByLabel('Password').fill('synthetic test password');
+ await page.getByRole('button',{name:'Sign in'}).click();
+ await expect(page.getByTestId('song')).toBeVisible();
+ id=await page.evaluate(async id=>{const item=await(await fetch('/api/arrangements/'+id)).json();const csrf=(await(await fetch('/api/session')).json()).csrf;return (await(await fetch('/api/songs/'+item.song_id+'/arrangements',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify({source:item.source})})).json()).id;},id);
+ await page.goto('/player?id='+id);
+ await page.getByRole('button',{name:'Increase transpose',exact:true}).click();
+ await expect(page.getByLabel('Transpose semitones')).toHaveValue('1');
+ await page.getByRole('button',{name:'Increase text size'}).click();
+ await expect(page.getByLabel('Text size:')).toHaveValue('21');
+ await page.locator('.music--play .chord').first().hover();
+ await expect(page.locator('.chord-popover').first()).toBeVisible();
+ await expect(page.getByRole('status').filter({hasText:'Saved for offline'})).toBeVisible();
+ await page.screenshot({path:'.local/review/player.png',fullPage:true});
+ await page.goto('/edit?id='+id);
+ await expect(page.locator('#source-editor')).toBeVisible();
+ const sourceBox=await page.locator('#source-editor').boundingBox(),previewBox=await page.locator('.arrangement-editor .music').boundingBox();
+ expect(Math.abs(sourceBox!.y-previewBox!.y)).toBeLessThan(150);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:'.local/review/editor.png',fullPage:true});
+});

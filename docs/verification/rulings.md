@@ -44,3 +44,16 @@ This report carries every ledger ruling and its stated cost. Earlier entries are
 ## Review of remaining effects
 
 The M2 placeholder shell and missing worker heartbeat were intermediate conditions; subsequent tasks implemented those workflows and heartbeat. PDF drafts still require review; measured correction times and detailed per-page fidelity are unavailable. Live provider fidelity, physical-phone behavior, transient/private WebKit storage, and visual inspection of real-song raster pages remain unverified. The compact diagram dictionary, export restrictions, offline storage/lease behavior, old setlist tombstone limits, source crop provenance, and search bounds remain product limitations as stated above. The local container bind is not a remote deployment security design.
+
+## Review follow-up
+
+- Keep high/low G: the actual G pitch differs by an octave even though most
+  chord shapes coincide. Help now explains this distinction.
+- Keep source/display/sounding-key semantics but move the visible play-key
+  report into capo help, as requested.
+- Automatic viewing caches a song only if no verified copy exists. Preserve
+  existing optional originals and stale copies; explicit refresh replaces them.
+  Cost: an updated online song can still require a manual offline refresh.
+- Diagram coverage is bounded to validated four-string voicings for supported
+  chord qualities. Unknown extensions and impossible bass requirements stay
+  explicit. Cost: some songs still require custom definitions or source review.

@@ -8,6 +8,7 @@ test('previews actual PDF pages and replaces stale settings results', async ({pa
   await page.getByRole('button',{name:'Sign in'}).click();
   await expect(page.getByText(/Actual page count:/)).toBeVisible({timeout:30000});
   await expect(page.getByAltText('PDF page 1')).toBeVisible();
+  expect(await page.getByAltText('PDF page 1').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(1600);
   await expect(page.getByRole('link',{name:'Download PDF'})).toBeVisible();
   await page.getByLabel('Paper').selectOption('A4');
   await expect(page.getByText('Generating current PDF…')).toBeVisible();

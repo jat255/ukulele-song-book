@@ -87,3 +87,11 @@ credentials and generated artifacts are synthetic and are not included here.
 The final whole-branch review is in [branch-review.md](branch-review.md). Its
 export-catalog memory-bound fix passed a targeted regression and 41 focused
 portability, restore, and recovery tests after the consolidated run above.
+
+## Review follow-up — 2026-11-12
+
+Addressed review feedback inline from clean base 119535e. See
+[comment outcomes](review-comments.md) for every comment, evidence, decisions,
+and remaining limits. This follow-up changes local UI, diagram lookup, preview
+resolution and automatic song caching; M4 remains unauthorized. Prior M1–M3
+completion evidence is retained rather than overwritten.

@@ -120,7 +120,7 @@ def page(job_id: str, page: int, request: Request, principal: Principal = sessio
         if page < 1 or page > job["page_count"]:
             raise ValueError("Invalid page")
         with request.app.state.pdf_lock, request.app.state.store._lock():
-            data = render_page(path, page, 100)
+            data = render_page(path, page, 200)
         return Response(
             data, media_type="image/png", headers={"Cache-Control": "no-store"}
         )

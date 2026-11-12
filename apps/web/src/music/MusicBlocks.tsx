@@ -1,13 +1,15 @@
+import {resolveDiagram} from '../../../../packages/music/src/diagrams';
+import {ChordDiagram} from '../features/player/ChordDiagram';
 import React from 'react';
 import type {MusicBlock,MusicDocument,PerformanceSettings} from '../../../../packages/music/src/model';
 import './music.css';
 
-function renderBlock(block:MusicBlock,mode:'play'|'print'):React.ReactNode {
+function renderBlock(block:MusicBlock,mode:'play'|'print',document:MusicDocument,performance:PerformanceSettings):React.ReactNode {
   if(block.kind==='lyric') return <div className="lyric-line">{block.segments.map((segment,i)=>{
     if(!segment.chord) return <span className="lyric-fragment" key={i}>{segment.lyric}</span>;
     const match=segment.lyric.match(/^(\s*\S+)([\s\S]*)$/);
     const first=match?.[1] ?? segment.lyric, rest=match?.[2] ?? '';
-    return <React.Fragment key={i}><span className={`segment${segment.lyric.trim() ? "" : " segment--empty"}`} data-chord={segment.chord}><span className="chord">{segment.chord}</span><span>{first || '\u00a0'}</span></span><span className="lyric-fragment">{rest}</span></React.Fragment>;
+    return <React.Fragment key={i}><span className={`segment${segment.lyric.trim() ? "" : " segment--empty"}`} data-chord={segment.chord}><span className="chord" tabIndex={mode==='play' ? 0 : undefined}>{segment.chord}{mode==='play' && <span className="chord-popover"><ul><ChordDiagram chord={segment.chord} diagram={resolveDiagram(segment.chord,performance.tuning,document.definitions)}/></ul></span>}</span><span>{first || '\u00a0'}</span></span><span className="lyric-fragment">{rest}</span></React.Fragment>;
   })}</div>;
   if(block.kind==='tab') {
     if (mode==='play' || !block.groups.length) return <pre data-testid="tab" className="tab">{block.text}</pre>;
@@ -26,8 +28,8 @@ function renderBlock(block:MusicBlock,mode:'play'|'print'):React.ReactNode {
   return null;
 }
 export function blockId(block:MusicBlock,index:number):string {return `${block.span.start}:${index}`;}
-export function MusicBlocks({document,mode,measure=false,plan}:{document:MusicDocument;performance:PerformanceSettings;mode:'play'|'print';measure?:boolean;plan?:string[][]}) {
-  const rendered = document.blocks.map((block,index) => ({id:blockId(block,index), block, node:renderBlock(block,mode)})).filter(item => item.node !== null);
+export function MusicBlocks({document,performance,mode,measure=false,plan}:{document:MusicDocument;performance:PerformanceSettings;mode:'play'|'print';measure?:boolean;plan?:string[][]}) {
+  const rendered = document.blocks.map((block,index) => ({id:blockId(block,index), block, node:renderBlock(block,mode,document,performance)})).filter(item => item.node !== null);
   function element(item:typeof rendered[number]) {
     if (!measure) return <React.Fragment key={item.id}>{item.node}</React.Fragment>;
     const heading = item.block.kind === 'section' && item.block.action === 'start';

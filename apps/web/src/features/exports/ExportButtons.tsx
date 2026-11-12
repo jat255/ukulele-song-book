@@ -17,12 +17,12 @@ export function ExportButtons({csrf, id}: {csrf:string; id?:string}) {
         const status = await fetch(`/api/exports/${encodeURIComponent(job.id)}`, {cache:'no-store'});
         if (!status.ok) throw new Error();
         const result = await status.json() as {state:string};
-        if (result.state === 'complete') {setReady({id:job.id,kind}); return;}
+        if (result.state === 'complete') {const link=document.createElement('a');link.href='/api/exports/'+encodeURIComponent(job.id)+'/file';link.download='';link.click();setReady({id:job.id,kind}); return;}
         if (result.state === 'failed') throw new Error();
       }
       throw new Error();
     } catch {setError('Export could not be prepared. Please try again.');}
     finally {setBusy(false);}
   }
-  return <span className="export-actions">{id ? <><button disabled={busy} onClick={()=>void start('chordpro')}>Export ChordPro</button><button disabled={busy} onClick={()=>void start('arrangement')}>Export with sources</button></> : <button disabled={busy} onClick={()=>void start('library')}>Export library</button>}{busy && <span role="status">Preparing export…</span>}{error && <span role="alert">{error}</span>}{ready && <a href={`/api/exports/${encodeURIComponent(ready.id)}/file`}>Download {ready.kind === 'library' ? 'library export' : ready.kind === 'chordpro' ? 'ChordPro' : 'arrangement export'}</a>}</span>;
+  return <details className="export-actions"><summary>Export</summary>{id ? <><button disabled={busy} onClick={()=>void start('chordpro')}>Export ChordPro</button><button disabled={busy} onClick={()=>void start('arrangement')}>Export with sources</button></> : <button disabled={busy} onClick={()=>void start('library')}>Export library</button>}{busy && <span role="status">Preparing export…</span>}{error && <span role="alert">{error}</span>}{ready && <a href={`/api/exports/${encodeURIComponent(ready.id)}/file`}>Download {ready.kind === 'library' ? 'library export' : ready.kind === 'chordpro' ? 'ChordPro' : 'arrangement export'}</a>}</details>;
 }

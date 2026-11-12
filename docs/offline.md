@@ -1,6 +1,6 @@
 # Offline downloads
 
-Sign in online before downloading a song or setlist. Use **Download for offline** in the library or **Download setlist** in the setlist editor. Originals are excluded unless you select the original PDF option. A setlist retains its order and repeated occurrences. Downloading does not change canonical song text.
+Sign in online before downloading a song or setlist. Opening an online song automatically saves a verified offline copy when none exists. The player reports success or failure. Existing copies are retained, including optional originals; refresh them through **Offline options** in the library. Use **Download for offline** in that menu for an explicit retry, or **Download setlist** in the setlist editor. Originals are excluded unless you select the original PDF option. A setlist retains its order and repeated occurrences. Downloading does not change canonical song text.
 
 The browser stores private snapshots in IndexedDB and verified assets in Cache Storage. Downloads are scoped to the library and its single authenticated owner. The app verifies the stored source hashes, required assets and application shell before reporting a selection as downloaded. If browser storage is cleared, evicted, corrupted or incompatible, the selection can become incomplete; reconnect and download it again. Browser storage persistence is requested where supported but is not guaranteed. The browser's storage estimate is approximate.
 
