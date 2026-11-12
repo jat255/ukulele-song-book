@@ -6,6 +6,7 @@ import json
 import httpx
 
 from .base import ProviderStatus, VisionDraft
+from .prompt import transcription_prompt
 
 
 class CompatibleProvider:
@@ -36,7 +37,7 @@ class CompatibleProvider:
         content.append(
             {
                 "type": "text",
-                "text": "Transcribe these selected pages in order to ChordPro. Do not invent missing content. Return only a JSON object with source (string) and uncertainties (array). Preserve chord positions, sections, and literal text tablature. Mark missing or uncertain material for review.",
+                "text": transcription_prompt([page.page for page in request.pages]),
             }
         )
         try:

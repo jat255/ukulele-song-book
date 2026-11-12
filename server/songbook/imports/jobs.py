@@ -216,6 +216,50 @@ class ImportJobs:
             )
             return bool(updated.rowcount)
 
+    def discard_job(
+        self, job_id: str, expected_state: str, expected_drafts: dict[str, str]
+    ) -> None:
+        """Remove pending drafts transactionally, retaining accepted history and originals."""
+        with connect(self.store.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            job = db.execute(
+                "SELECT state FROM import_jobs WHERE id=?", (job_id,)
+            ).fetchone()
+            if job is None:
+                raise KeyError(job_id)
+            drafts = db.execute(
+                "SELECT id,revision,accepted_id,accepting_revision FROM import_drafts WHERE job_id=?",
+                (job_id,),
+            ).fetchall()
+            pending = {
+                row["id"]: row["revision"] for row in drafts if not row["accepted_id"]
+            }
+            if (
+                job["state"] != expected_state
+                or job["state"] in ("processing", "accepted")
+                or pending != expected_drafts
+                or any(
+                    row["accepting_revision"] is not None and not row["accepted_id"]
+                    for row in drafts
+                )
+            ):
+                raise ConflictError("Import changed or is active")
+            db.execute(
+                "DELETE FROM import_draft_provenance WHERE draft_id IN (SELECT id FROM import_drafts WHERE job_id=? AND accepted_id IS NULL)",
+                (job_id,),
+            )
+            db.execute(
+                "DELETE FROM import_drafts WHERE job_id=? AND accepted_id IS NULL",
+                (job_id,),
+            )
+            if any(row["accepted_id"] for row in drafts):
+                db.execute(
+                    "UPDATE import_jobs SET state='accepted',worker_id=NULL,lease_until=NULL WHERE id=?",
+                    (job_id,),
+                )
+            else:
+                db.execute("DELETE FROM import_jobs WHERE id=?", (job_id,))
+
     def retry_job(self, job_id: str, *, authorize_ai: bool = False) -> dict:
         with connect(self.store.database) as db:
             db.execute("BEGIN IMMEDIATE")

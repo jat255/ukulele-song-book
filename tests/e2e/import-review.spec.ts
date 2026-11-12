@@ -54,4 +54,15 @@ test('advancing to another PDF draft requires its own warning acknowledgement',a
  await expect(page.getByAltText('Original page 1')).toBeVisible({timeout:15000});await page.getByLabel('ChordPro draft').fill('{title: First warning draft}\n[C]Synthetic');await page.getByRole('button',{name:'Save draft'}).click();await expect(page.getByText('Draft saved.')).toBeVisible();
  await page.getByLabel('I reviewed the warnings and original').check();await page.getByRole('button',{name:'Accept draft'}).click();
  await expect(page.getByAltText('Original page 2')).toBeVisible({timeout:15000});await expect(page.getByLabel('I reviewed the warnings and original')).not.toBeChecked();
+ await page.getByLabel('ChordPro draft').fill('{title: Second warning draft}\n[G]Synthetic');await page.getByRole('button',{name:'Save draft'}).click();await expect(page.getByText('Draft saved.')).toBeVisible();await page.getByLabel('I reviewed the warnings and original').check();await page.getByRole('button',{name:'Accept draft'}).click();await expect(page.getByText('Arrangement accepted')).toBeVisible();
+});
+
+test('discards a draft and starts over from its retained source without another file upload',async({page})=>{
+ await page.goto('/imports');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
+ await page.getByLabel('Choose source').setInputFiles({name:'start-over.cho',mimeType:'text/plain',buffer:Buffer.from('{title: Start over}\n[C]Synthetic')});await page.getByRole('button',{name:'Import source'}).click();
+ await expect(page.getByLabel('ChordPro draft')).toHaveValue('{title: Start over}\n[C]Synthetic',{timeout:15000});
+ const row=page.getByRole('table',{name:'Import queue'}).getByRole('row').filter({hasText:'start-over.cho'});page.on('dialog',dialog=>dialog.accept());
+ await row.getByRole('button',{name:'Start over',exact:true}).click();await expect(page.getByText('Ready to retry: start-over.cho')).toBeVisible();await expect(row).toHaveCount(0);
+ await page.getByRole('button',{name:'Import source'}).click();await expect(page.getByLabel('ChordPro draft')).toHaveValue('{title: Start over}\n[C]Synthetic',{timeout:15000});
+ await row.getByRole('button',{name:'Discard attempt',exact:true}).click();await expect(row).toHaveCount(0);await expect(page.getByLabel('ChordPro draft')).toHaveCount(0);
 });

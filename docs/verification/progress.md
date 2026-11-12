@@ -129,3 +129,8 @@ per-import authorization. Final Python224, Chromium95, focused WebKit1, unit
 5+26, typecheck/build/schema/Ruff/diff passed. No live provider request made.
 Keys are not encrypted and are excluded from library archives; see ai-conversion.md.
 No deployment or CI access; previous fidelity/device limits remain.
+
+Placement/retry follow-up: shared explicit character-anchor transcription prompt,
+transactional pending-draft discard and retained-source Start over with fresh AI
+consent. Python231, Chromium96, focused WebKit5, unit5+26, typecheck/build/schema/
+Ruff/diff passed. Inline review completed; no live conversion fidelity claim.

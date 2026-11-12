@@ -56,3 +56,29 @@ configuration again.
 
 The provider endpoint format follows NVIDIA's multimodal API documentation:
 https://docs.nvidia.com/nim/large-language-models/latest/advanced-use-cases/multimodal-input.html
+
+## Chord placement and trying again
+
+Both adapters now share the `chord-placement-v2` transcription prompt. It teaches
+inline character/syllable anchoring with authored synthetic examples, including
+changes inside a word. It asks the model to separate source columns, preserve
+chord/lyric row association, avoid spacing-based guesses with proportional fonts,
+and check that removing inserted chord markers leaves the lyrics unchanged.
+Ambiguous placement is retained as a nearby chord-only line with a review note,
+rather than presented as a confident attachment. This is still a model-produced
+draft: mock request tests establish that instructions are sent, not that a live
+model follows them. No before/after real-song alignment accuracy was measured.
+
+For an unwanted attempt, use **Discard attempt** in the import queue. It removes
+only unaccepted drafts. Managed originals, accepted songs and accepted import
+provenance remain. If a multi-song import is partially accepted, its accepted
+history remains in the queue. Processing attempts cannot be discarded; wait
+until processing finishes. A changed draft or acceptance in progress produces
+a conflict rather than silently removing newer work.
+
+**Start over** discards pending work and prepares the retained source for a new
+import, preserving the unaccepted page/crop selection without requiring another
+upload. Review the settings and click Import source. AI is deliberately off for
+this new attempt until you select the external-submission checkbox again. Merely
+preparing a retry does not contact a provider. A new AI submission may consume
+credits. Existing drafts are not rewritten when the prompt changes.

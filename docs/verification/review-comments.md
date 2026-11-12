@@ -224,3 +224,35 @@ No remaining critical/important task finding. One deliberate compatibility
 choice accepts provider-returned versioned model IDs, recording the actual ID;
 a structured response does not independently prove which remote model ran.
 HTTP custom endpoints are limited to loopback; remote LAN services require HTTPS.
+
+## Chord placement prompting and draft retries
+
+The old prompts gave little anchoring guidance and differed by provider. Both
+now send shared chord-placement-v2 instructions: page/column reading order,
+chord-row/lyric pairing, exact character/syllable anchors including mid-word
+changes, authored synthetic examples, proportional-font caution, lyric-preserving
+checks and explicit uncertain-placement fallback. Mock payload regressions
+failed before implementation and passed afterward. These tests verify the
+instructions, not live-model obedience or real-song accuracy. Existing drafts
+are unchanged; a new conversion uses the new prompt.
+
+Added Discard attempt and Start over to pending/failed queue rows. Discard checks
+expected state and all pending revisions in one transaction, rejects processing
+and acceptance-in-progress, and removes only unaccepted drafts/provenance. It
+keeps source files and accepted songs/provenance, including partially accepted
+multi-song imports. Start over prepares the retained source and only unaccepted
+page/crop selections without uploading again or invoking a provider. AI consent
+is reset; the user must review settings, authorize external submission again if
+desired, and click Import source. Original selection is retained until edited.
+
+Service/API and browser regressions covered source retention, changed revisions,
+worker/acceptance conflicts, partial acceptance, CSRF/auth, fresh attempts and
+UI clearing. Final inline review checked transactional publication guards,
+accepted provenance, and consent reset; no critical/important finding remains.
+Processing attempts intentionally cannot be canceled/discarded in flight. No
+new physical-phone, live provider, real-page visual or alignment-quality claim.
+Final placement/retry verification: full Python231 passed (one existing Starlette
+warning), full Chromium96 passed, focused WebKit5 passed, unit5+26 passed.
+Typecheck/build/schema/Ruff check+format/whitespace passed. No live provider
+request was used to verify this change; real alignment/error-count/correction-
+time and the earlier physical-device/PDF fidelity limits remain unverified.

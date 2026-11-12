@@ -156,6 +156,29 @@ def get_job(job_id: str, request: Request, principal: Principal = principal_depe
         raise HTTPException(404, detail="Import not found") from None
 
 
+class DiscardRequest(BaseModel):
+    state: str = Field(max_length=30)
+    drafts: dict[str, str] = Field(max_length=20)
+
+
+@router.delete("/{job_id}", status_code=204)
+def discard(
+    job_id: str,
+    body: DiscardRequest,
+    request: Request,
+    principal: Principal = principal_dependency,
+):
+    require_csrf(request, principal)
+    try:
+        request.app.state.imports.discard_job(job_id, body.state, body.drafts)
+    except KeyError:
+        raise HTTPException(404, detail="Import not found") from None
+    except ConflictError:
+        raise HTTPException(
+            409, detail="Import changed or is processing; refresh and try again"
+        ) from None
+
+
 @router.put("/{job_id}/drafts/{draft_id}")
 def edit(
     job_id: str,

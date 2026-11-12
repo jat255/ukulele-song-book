@@ -6,6 +6,7 @@ import json
 import httpx
 
 from .base import ProviderStatus, VisionDraft, VisionRequest
+from .prompt import transcription_prompt
 
 
 class AnthropicProvider:
@@ -65,7 +66,7 @@ class AnthropicProvider:
         content.append(
             {
                 "type": "text",
-                "text": "Transcribe the selected pages to ChordPro. Do not invent missing content. Return JSON with source and uncertainties.",
+                "text": transcription_prompt([page.page for page in request.pages]),
             }
         )
         try:
