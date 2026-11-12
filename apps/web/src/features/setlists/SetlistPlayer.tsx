@@ -1,4 +1,5 @@
 import React, {useEffect,useState} from 'react';
+import {getOfflineSetlist} from '../../offline/downloads';
 import {Player} from '../player/Player';
 import type {Setlist} from './Setlists';
 
@@ -6,7 +7,7 @@ export function SetlistPlayer({id,csrf}:{id:string;csrf:string}) {
   const [set,setSet]=useState<Setlist|null>(null);
   const [index,setIndex]=useState(0);
   const [error,setError]=useState('');
-  useEffect(()=>{void fetch(`/api/setlists/${id}`).then(async response=>{if(!response.ok)throw new Error();setSet(await response.json() as Setlist);}).catch(()=>setError('Setlist unavailable.'));},[id]);
+  useEffect(()=>{void fetch(`/api/setlists/${id}`).then(async response=>{if(!response.ok)throw new Error();setSet(await response.json() as Setlist);}).catch(()=>{void getOfflineSetlist<Setlist>(id).then(saved=>{if(saved)setSet(saved);else setError('Setlist unavailable offline.');});});},[id]);
   if(!set)return <main>{error || 'Loading setlist…'}</main>;
   const item=set.items[index];
   if(!item)return <main><a href={`/setlists?id=${encodeURIComponent(id)}`}>Edit setlist</a><p>This setlist has no songs.</p></main>;

@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS library_identity (singleton INTEGER PRIMARY KEY CHECK(singleton=1), id TEXT NOT NULL UNIQUE);
+INSERT OR IGNORE INTO schema_migrations VALUES (8);

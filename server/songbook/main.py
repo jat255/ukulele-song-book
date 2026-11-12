@@ -25,6 +25,8 @@ from .api.auth import (
     require_origin,
     require_session,
 )
+from .api.downloads import initialize as initialize_downloads
+from .api.downloads import router as downloads_router
 from .api.imports import router as imports_router
 from .api.library import router as library_router
 from .api.pdfs import router as pdf_router
@@ -66,6 +68,8 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.pdf_jobs = PdfJobs(store)
     app.state.pdf_lock = _pdf_lock
     initialize_preferences(store.database)
+    initialize_downloads(store)
+    app.include_router(downloads_router)
     app.include_router(imports_router)
     app.include_router(library_router)
     app.include_router(preferences_router)
@@ -143,7 +147,7 @@ def create_app(settings: Settings) -> FastAPI:
                     row[0]
                     for row in db.execute("SELECT version FROM schema_migrations")
                 }
-                if not {1, 2, 3, 4, 5, 6, 7}.issubset(migrations):
+                if not {1, 2, 3, 4, 5, 6, 7, 8}.issubset(migrations):
                     raise ValueError("Migrations incomplete")
                 db.execute("BEGIN IMMEDIATE")
                 db.rollback()
