@@ -41,6 +41,7 @@ from .api.schemas import (
     SessionResponse,
 )
 from .api.setlists import router as setlists_router
+from .api.sync import router as sync_router
 from .config import Settings
 from .imports.jobs import ImportJobs
 from .imports.pdf_extract import render_page
@@ -75,6 +76,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(preferences_router)
     app.include_router(pdf_router)
     app.include_router(setlists_router)
+    app.include_router(sync_router)
 
     @app.middleware("http")
     async def restrict_loopback(request: Request, call_next):
@@ -147,7 +149,7 @@ def create_app(settings: Settings) -> FastAPI:
                     row[0]
                     for row in db.execute("SELECT version FROM schema_migrations")
                 }
-                if not {1, 2, 3, 4, 5, 6, 7, 8}.issubset(migrations):
+                if not {1, 2, 3, 4, 5, 6, 7, 8, 9}.issubset(migrations):
                     raise ValueError("Migrations incomplete")
                 db.execute("BEGIN IMMEDIATE")
                 db.rollback()

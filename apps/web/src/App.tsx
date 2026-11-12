@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {removeAllDownloads,reconcileStaging,selectAuthenticatedScope} from './offline/downloads';
+import {checkDownloads} from './offline/sync';
 
 import type {components} from './api/generated';
 import {ImportQueue} from './features/imports/ImportQueue';
@@ -28,6 +29,7 @@ export function App() {
       if (response.ok) {const current=await response.json() as Session;await selectScope();setSession(current);}
     }).catch(() => {if(localStorage.getItem('songbook-offline-scope'))setSession({csrf:''});else setError('Unable to reach the server.');}).finally(() => setLoading(false));
   }, []);
+  useEffect(()=>{const reconnect=()=>{void fetch('/api/session').then(async response=>{if(response.ok){const current=await response.json() as Session;await selectScope();setSession(current);await checkDownloads(current.csrf);window.dispatchEvent(new Event('songbook-sync-complete'));}}).catch(()=>{});};window.addEventListener('online',reconnect);return()=>window.removeEventListener('online',reconnect);},[]);
   async function login(event: React.FormEvent) {
     event.preventDefault();
     setError('');

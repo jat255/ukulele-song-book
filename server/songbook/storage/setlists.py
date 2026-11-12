@@ -19,6 +19,11 @@ class SetlistStore:
             db.executescript(
                 (Path(__file__).parent / "migrations/007_setlists.sql").read_text()
             )
+            db.executescript(
+                (
+                    Path(__file__).parent / "migrations/009_setlist_tombstones.sql"
+                ).read_text()
+            )
 
     def create(self, title: str) -> dict:
         title = title.strip()
@@ -128,3 +133,4 @@ class SetlistStore:
                 ).fetchone():
                     raise KeyError(ident)
                 raise ConflictError("Setlist changed")
+            db.execute("INSERT OR IGNORE INTO setlist_tombstones VALUES (?)", (ident,))

@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS setlist_tombstones (id TEXT PRIMARY KEY);
+INSERT OR IGNORE INTO schema_migrations VALUES (9);

@@ -7,3 +7,11 @@ The browser stores private snapshots in IndexedDB and verified assets in Cache S
 Use **Remove download** to remove a song selection. Shared original files are kept while another selection needs them. On browsers without the Web Locks API, unreferenced shared files can remain until you choose to remove private downloads when signing out; this avoids racing another tab's download. Sign-out revokes the server session first, then offers local removal, selected by default. If you keep downloads, a private copy remains on this device. If removal fails, the app reports that failure; use browser site-data controls if necessary.
 
 Downloaded songs and sets can be opened after a cold offline reload. Browser printing uses browser pagination and can differ from the server PDF. Editing, imports and server PDF generation require a connection. An optional downloaded original can be opened from the offline player. Offline first login is not supported. Do not rely on a browser download as the only backup of a library; use the separately documented backup procedure when available.
+
+On reconnection the app checks downloaded revisions without deleting local
+copies. An outdated or deleted copy remains available until you remove or
+refresh it. Refresh explicitly to replace a downloaded selection, including
+new setlist members. A partial set keeps its order and can play intact cached
+songs. Preference groups reconcile independently by device timestamp and ID;
+incorrect device clocks can affect the winner. See
+[offline verification](verification/offline.md) for tested browsers and limits.

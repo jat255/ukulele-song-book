@@ -34,3 +34,9 @@ See the README for local password provisioning, server and worker commands.
 The next milestone adds setlists, offline use and portability. No deployment,
 publication, push, external collection submission or CI monitoring is authorized
 by these plans.
+
+Milestone 3 has local setlist, offline download and reconnection work in
+progress. See [offline verification](offline.md) for browser versions,
+reconciliation behavior and the physical-device limitations. These results do
+not establish portability, backup/restore, local container operation, or
+milestone completion; those require their own gates.

@@ -15,14 +15,15 @@ import './player.css';
 
 type Snapshot = {id:string; song_id:string; source:string; revision:string};
 
-export function Player({id,csrf}: {id:string;csrf:string}) {
+export function Player({id,csrf,forceCached=false,selectionId}: {id:string;csrf:string;forceCached?:boolean;selectionId?:string}) {
   const [snapshot,setSnapshot] = useState<Snapshot|null>(null);
   const [error,setError] = useState('');
   const [width,setWidth] = useState(320);
   const [tools,setTools] = useState(false);
   const [activeSection,setActiveSection] = useState('');
   const [originals,setOriginals]=useState<string[]>([]);
-  useEffect(()=>{if(csrf)return;let active=true;let urls:string[]=[];void getOfflineOriginals(id).then(blobs=>{if(!active)return;urls=blobs.map(blob=>URL.createObjectURL(blob));setOriginals(urls);});return()=>{active=false;urls.forEach(url=>URL.revokeObjectURL(url));};},[id,csrf]);
+  const cachedOnly=forceCached || new URLSearchParams(location.search).get('cached')==='1';
+  useEffect(()=>{if(csrf && !cachedOnly)return;let active=true;let urls:string[]=[];void getOfflineOriginals(id).then(blobs=>{if(!active)return;urls=blobs.map(blob=>URL.createObjectURL(blob));setOriginals(urls);});return()=>{active=false;urls.forEach(url=>URL.revokeObjectURL(url));};},[id,csrf,cachedOnly]);
   const preferences=usePreferences(id,csrf);
   const play=preferences.data.groups.play.value;
   const storedPerformance=preferences.data.groups.performance.value;
@@ -34,10 +35,11 @@ export function Player({id,csrf}: {id:string;csrf:string}) {
   const sidebar = useRef<HTMLElement>(null);
   useEffect(() => {
     let live = true;
-    void fetch(`/api/arrangements/${id}`).then(async response => {if (!response.ok) throw new Error(); const result = await response.json() as Snapshot; if (live) setSnapshot(result);}).catch(() => {void getOfflineSnapshot(id).then(saved=>{if(live){if(saved)setSnapshot(saved);else setError('Arrangement unavailable offline.');}});});
+    if(cachedOnly){void getOfflineSnapshot(id,selectionId).then(saved=>{if(live){if(saved)setSnapshot(saved);else setError('Cached arrangement unavailable.');}});return()=>{live=false;};}
+    void fetch(`/api/arrangements/${id}`).then(async response => {if (!response.ok) throw new Error(); const result = await response.json() as Snapshot; if (live) setSnapshot(result);}).catch(() => {void getOfflineSnapshot(id,selectionId).then(saved=>{if(live){if(saved)setSnapshot(saved);else setError('Arrangement unavailable offline.');}});});
     if(navigator.onLine)void fetch(`/api/arrangements/${id}/played`, {method:'POST',headers:{'X-CSRF-Token':csrf}}).catch(()=>{});
     return () => {live=false;};
-  }, [id,csrf]);
+  }, [id,csrf,cachedOnly,selectionId]);
   useEffect(() => {
     if (!region.current) return;
     const observer = new ResizeObserver(entries => setWidth(entries[0].contentRect.width));

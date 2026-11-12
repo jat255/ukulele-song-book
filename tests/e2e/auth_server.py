@@ -43,7 +43,10 @@ player_song = app.state.store.create_arrangement(
 )
 Path("/private/tmp/songbook-auth-e2e-player-id").write_text(player_song.id)
 performance_song = app.state.store.create_arrangement(
-    None, player_song.source, [], None
+    None,
+    player_song.source.replace("{title: Player Test}", "{title: Performance Test}"),
+    [],
+    None,
 )
 Path("/private/tmp/songbook-auth-e2e-performance-id").write_text(performance_song.id)
 writer = PdfWriter()

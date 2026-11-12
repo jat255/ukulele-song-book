@@ -577,6 +577,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sync/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check */
+        post: operations["check_api_sync_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -739,6 +756,13 @@ export interface components {
             }[];
             /** Source Id */
             source_id: string;
+        };
+        /** KnownRevision */
+        KnownRevision: {
+            /** Id */
+            id: string;
+            /** Revision */
+            revision: string;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -934,6 +958,13 @@ export interface components {
             pages: number[];
             /** Source Id */
             source_id: string;
+        };
+        /** SyncCheck */
+        SyncCheck: {
+            /** Arrangements */
+            arrangements?: components["schemas"]["KnownRevision"][];
+            /** Setlists */
+            setlists?: components["schemas"]["KnownRevision"][];
         };
         /** ValidationError */
         ValidationError: {
@@ -2316,6 +2347,39 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_api_sync_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncCheck"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
