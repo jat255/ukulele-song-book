@@ -244,3 +244,99 @@ def test_variant_can_retain_original_source_references(tmp_path):
         assert response.status_code == 201
         assert response.json()["source_refs"][0]["source_id"] == source.id
         assert response.json()["source_refs"][0]["pages"] == [3]
+
+
+def test_source_only_entry_can_be_removed_without_deleting_original(tmp_path):
+    from server.songbook.storage.db import connect
+
+    store = LibraryStore(tmp_path)
+    index = LibraryIndex(store)
+    source = store.register_source(io.BytesIO(b"synthetic PDF"), "only.pdf", "pdf")
+    entry = next(
+        item for item in index.search_library("", [], False) if item["id"] == source.id
+    )
+    index.delete_source(source.id, entry["metadata_revision"])
+    assert all(item["id"] != source.id for item in index.search_library("", [], False))
+    with connect(store.database) as db:
+        path = db.execute(
+            "SELECT path FROM sources WHERE id=?", (source.id,)
+        ).fetchone()[0]
+    assert (store.root / path).read_bytes() == b"synthetic PDF"
+    with pytest.raises(ConflictError):
+        index.delete_source(source.id, entry["metadata_revision"])
+
+
+def test_source_delete_rejects_new_arrangement_link(tmp_path):
+    store = LibraryStore(tmp_path)
+    index = LibraryIndex(store)
+    source = store.register_source(io.BytesIO(b"original"), "linked.pdf", "pdf")
+    entry = next(
+        item for item in index.search_library("", [], False) if item["id"] == source.id
+    )
+    store.create_arrangement(
+        None,
+        "{title: Linked}\n[C]Synthetic",
+        [{"source_id": source.id, "pages": [1]}],
+        None,
+    )
+    with pytest.raises(ConflictError):
+        index.delete_source(source.id, entry["metadata_revision"])
+
+
+def test_deleted_source_stays_hidden_after_portable_restore(tmp_path):
+    from server.songbook.portability.export import export_library
+    from server.songbook.portability.restore import restore_archive
+
+    store = LibraryStore(tmp_path / "library")
+    index = LibraryIndex(store)
+    source = store.register_source(
+        io.BytesIO(b"synthetic retained PDF"), "hidden.pdf", "pdf"
+    )
+    index.delete_source(source.id, 0)
+    archive = tmp_path / "portable.zip"
+    export_library(store, archive)
+    destination = tmp_path / "restored"
+    restore_archive(archive, destination, "portable")
+    restored = LibraryStore(destination)
+    assert all(
+        item["id"] != source.id
+        for item in LibraryIndex(restored).search_library("", [], False)
+    )
+
+
+def test_source_library_delete_api_requires_auth_and_csrf(tmp_path):
+    from fastapi.testclient import TestClient
+
+    from server.songbook.config import Settings
+    from server.songbook.main import create_app
+
+    app = create_app(
+        Settings(library_root=tmp_path, allowed_origins=("http://testserver",))
+    )
+    app.state.auth.set_password("synthetic test password")
+    source = app.state.store.register_source(
+        io.BytesIO(b"synthetic source"), "delete.pdf", "pdf"
+    )
+    with TestClient(app, client=("127.0.0.1", 1234)) as client:
+        path = f"/api/sources/{source.id}/library"
+        assert client.request("DELETE", path, json={"revision": 0}).status_code == 401
+        session = client.post(
+            "/api/session",
+            json={"password": "synthetic test password"},
+            headers={"Origin": "http://testserver"},
+        ).json()
+        assert client.request("DELETE", path, json={"revision": 0}).status_code == 403
+        headers = {"Origin": "http://testserver", "X-CSRF-Token": session["csrf"]}
+        assert (
+            client.request(
+                "DELETE", path, json={"revision": 0}, headers=headers
+            ).status_code
+            == 204
+        )
+        assert (
+            client.request(
+                "DELETE", path, json={"revision": 0}, headers=headers
+            ).status_code
+            == 409
+        )
+        assert client.get(f"/api/sources/{source.id}/original").status_code == 200

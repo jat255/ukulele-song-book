@@ -13,6 +13,11 @@ from pathlib import Path
 from ..music_bridge import _run_bounded, parse_source
 from ..storage.arrangements import ConflictError, LibraryStore
 from ..storage.db import connect
+from .failures import ConversionFailure, details
+
+
+class FullPdfSelectionError(ValueError):
+    """A safe, user-visible whole-document selection error."""
 
 
 def revision(source: str) -> str:
@@ -39,6 +44,58 @@ class ImportJobs:
             or len(idempotency_key) > 200
         ):
             raise ValueError("Invalid import request")
+        if any(part.get("all_pages") for part in selection):
+            if (
+                len(selection) != 1
+                or selection[0].get("all_pages") is not True
+                or selection[0].get("pages")
+                or method not in ("local", "ai")
+            ):
+                raise FullPdfSelectionError(
+                    "Entire PDF must be one song selection without explicit pages."
+                )
+            with connect(self.store.database) as db:
+                source = db.execute(
+                    "SELECT * FROM sources WHERE id=?", (source_id,)
+                ).fetchone()
+            if source is None or source["kind"] != "pdf":
+                raise FullPdfSelectionError("Entire-document selection requires a PDF.")
+            path = (self.store.root / source["path"]).resolve()
+            if not path.is_relative_to(self.store.root / "sources" / source_id):
+                raise FullPdfSelectionError("Source unavailable.")
+            try:
+                count = int(
+                    _run_bounded(
+                        [
+                            sys.executable,
+                            "-m",
+                            "server.songbook.imports.count_subprocess",
+                        ],
+                        json.dumps({"path": str(path), "sha256": source["sha256"]}),
+                        limit=100,
+                        timeout=15,
+                    )
+                )
+            except Exception as error:
+                raise FullPdfSelectionError(
+                    "Could not read the PDF page count. Check the original or choose custom pages."
+                ) from error
+            maximum = 5 if method == "ai" else 20
+            if not 1 <= count <= maximum:
+                raise FullPdfSelectionError(
+                    f"Entire PDF has {count} pages; this conversion supports at most {maximum}. Choose custom pages; no pages were queued."
+                )
+            part = {
+                key: value
+                for key, value in selection[0].items()
+                if key not in ("all_pages", "crop", "pages")
+            }
+            part["pages"] = list(range(1, count + 1))
+            if selection[0].get("crop") is not None:
+                part["rectangles"] = {
+                    str(page): selection[0]["crop"] for page in part["pages"]
+                }
+            selection = [part]
         if method == "ai" and (
             len(selection) != 1
             or selection[0].get("authorization") is not True
@@ -153,6 +210,9 @@ class ImportJobs:
             if row is None:
                 raise KeyError(ident)
             result = dict(row)
+            result["error_details"] = (
+                details(result["error_code"]) if result["error_code"] else None
+            )
             result["selection"] = json.loads(result.pop("selection_json"))
             result["drafts"] = []
             for raw in db.execute(
@@ -294,10 +354,10 @@ class ImportJobs:
             raise ValueError("Direct import requires ChordPro")
         path = (self.store.root / source["path"]).resolve()
         if not path.is_relative_to(self.store.root / "sources" / source["id"]):
-            raise ValueError("Source unavailable")
+            raise ConversionFailure("source_unavailable")
         data = path.read_bytes()
         if hashlib.sha256(data).hexdigest() != source["sha256"]:
-            raise ValueError("Source unavailable")
+            raise ConversionFailure("source_unavailable")
         text = data.decode("utf-8")
         parse_source(text)
         with connect(self.store.database) as db:
@@ -340,9 +400,9 @@ class ImportJobs:
             not path.is_relative_to(self.store.root / "sources" / source["id"])
             or not path.is_file()
         ):
-            raise ValueError("Source unavailable")
+            raise ConversionFailure("source_unavailable")
         if hashlib.sha256(path.read_bytes()).hexdigest() != source["sha256"]:
-            raise ValueError("Source unavailable")
+            raise ConversionFailure("source_unavailable")
         request = json.dumps(
             {
                 "path": str(path),
@@ -411,7 +471,7 @@ class ImportJobs:
             or status.model != selection["model"]
             or len(selection["pages"]) > status.page_limit
         ):
-            raise ValueError("Authorized provider unavailable")
+            raise ConversionFailure("provider_changed")
         with connect(self.store.database) as db:
             source = db.execute(
                 "SELECT * FROM sources WHERE id=?", (job["source_id"],)
@@ -424,7 +484,7 @@ class ImportJobs:
             or not path.is_file()
             or hashlib.sha256(path.read_bytes()).hexdigest() != source["sha256"]
         ):
-            raise ValueError("Source unavailable")
+            raise ConversionFailure("source_unavailable")
         pages = []
         for page in selection["pages"]:
             output = _run_bounded(

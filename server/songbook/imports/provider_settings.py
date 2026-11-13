@@ -10,6 +10,7 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from ..storage.arrangements import ConflictError
+from .failures import ConversionFailure
 
 
 class ProviderEdit(BaseModel):
@@ -164,7 +165,7 @@ class BoundProvider:
 
     def convert(self, request):
         if not self.status().available:
-            raise ValueError("Provider configuration changed; authorize a new request")
+            raise ConversionFailure("provider_changed")
         return self.adapter.convert(request)
 
 

@@ -120,6 +120,22 @@ def delete(
     return Response(status_code=204)
 
 
+@router.delete("/sources/{ident}/library", status_code=204)
+def delete_source(
+    ident: str, body: DeleteRequest, request: Request, principal: Principal = session
+):
+    require_csrf(request, principal)
+    try:
+        request.app.state.library.delete_source(ident, body.revision)
+    except KeyError:
+        raise HTTPException(404, detail="Source not found") from None
+    except ConflictError:
+        raise HTTPException(
+            409, detail="Source changed or is now linked to an arrangement"
+        ) from None
+    return Response(status_code=204)
+
+
 @router.get("/arrangements/{ident}/download")
 def download(ident: str, request: Request, principal: Principal = session):
     try:

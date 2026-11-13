@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from PIL import Image, ImageDraw
 from pydantic import BaseModel
 
+from ..imports.failures import ConversionFailure, details
 from ..imports.provider_settings import (
     ProviderEdit,
     load_settings,
@@ -83,6 +84,11 @@ def test_connection(body: TestRequest, request: Request, principal=session):
         )
         if not draft.source.strip():
             raise ValueError("Empty draft")
+    except ConversionFailure as error:
+        feedback = details(error.code)
+        raise HTTPException(
+            502, detail=feedback["message"] + " " + feedback["hint"]
+        ) from None
     except Exception:  # noqa: BLE001 -- provider errors must not disclose credentials or content
         raise HTTPException(
             502,

@@ -10,6 +10,7 @@ from pathlib import Path
 from PIL import Image
 
 from ..music_bridge import parse_source
+from .failures import ConversionFailure
 from .models import ConversionDraft
 from .providers.base import ProviderStatus, SelectedPage, VisionProvider, VisionRequest
 
@@ -133,5 +134,7 @@ class AIConversionService:
                     *[str(x) for x in vision.uncertainties],
                 ],
             )
+        except ConversionFailure:
+            raise
         except Exception:  # noqa: BLE001 - do not expose provider payloads
-            raise ValueError("Conversion failed; manual retry required") from None
+            raise ConversionFailure("draft_invalid") from None

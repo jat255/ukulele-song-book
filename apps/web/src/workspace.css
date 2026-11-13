@@ -184,3 +184,12 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 @media(max-width:600px){.ai-settings-dialog {padding:1rem}.ai-fields {grid-template-columns:1fr}.ai-settings {padding:1rem}}
 .ai-fields input,.ai-fields select {font-weight:400;font-size:.95rem}
 .ai-fields select {appearance:none;padding-right:2rem;background-image:linear-gradient(45deg,transparent 50%,#52674d 50%),linear-gradient(135deg,#52674d 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 12px) 50%;background-size:4px 4px;background-repeat:no-repeat}
+.workspace .library-delete {color:#914532;border-color:transparent;background:transparent}
+.workspace .library-delete:hover {background:#fff0e8;border-color:#e2c4b6}
+.import-page-mode {display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;margin-bottom:1rem}
+.import-page-mode label {display:flex;gap:.4rem;align-items:center;font-size:.9rem;font-weight:550}
+.import-page-help {color:#61705f;font-size:.85rem;margin:.25rem 0 1rem}
+.import-failure {max-width:32rem;margin-top:.65rem;font-size:.85rem;line-height:1.5;color:#854531}
+.import-failure strong {font-weight:600}
+.import-failure p {margin:.35rem 0;color:#61705f}
+.import-failure small {color:#7c746b;font-size:.72rem}

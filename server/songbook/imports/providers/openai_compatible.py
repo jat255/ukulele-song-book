@@ -5,6 +5,7 @@ import json
 
 import httpx
 
+from ..failures import ConversionFailure, http_failure
 from .base import ProviderStatus, VisionDraft
 from .prompt import transcription_prompt
 
@@ -64,7 +65,13 @@ class CompatibleProvider:
             result = json.loads(data)
             choice = result["choices"][0]
             if choice["finish_reason"] != "stop":
-                raise ValueError("Incomplete response")
+                raise ConversionFailure(
+                    "provider_output_truncated"
+                    if choice["finish_reason"] == "length"
+                    else "provider_refused"
+                    if choice["finish_reason"] == "content_filter"
+                    else "provider_invalid_response"
+                )
             raw = choice["message"]["content"]
             if raw.startswith("```"):
                 raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
@@ -84,12 +91,13 @@ class CompatibleProvider:
                 result.get("usage", {}),
                 result["id"],
             )
-        except (
-            httpx.HTTPError,
-            KeyError,
-            IndexError,
-            TypeError,
-            ValueError,
-            AttributeError,
-        ):
-            raise ValueError("Vision conversion failed or was incomplete") from None
+        except ConversionFailure:
+            raise
+        except httpx.TimeoutException:
+            raise ConversionFailure("provider_timeout") from None
+        except httpx.HTTPStatusError as error:
+            raise ConversionFailure(http_failure(error.response.status_code)) from None
+        except httpx.RequestError:
+            raise ConversionFailure("provider_network") from None
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+            raise ConversionFailure("provider_invalid_response") from None

@@ -11,8 +11,8 @@ test('configures an OpenAI-compatible service in a keyboard-accessible dialog wi
  const response=await page.request.get('/api/provider/settings');expect(await response.text()).not.toContain('synthetic-browser-secret');
  await page.keyboard.press('Escape');await expect(dialog).toBeHidden();await expect(page.getByRole('button',{name:'Configure AI conversion'})).toBeFocused();
  await page.getByRole('button',{name:'Configure AI conversion'}).click();
- await page.route('**/api/provider/test',async route=>{expect(route.request().postDataJSON().authorize_synthetic).toBe(true);expect(route.request().postData()).not.toContain('synthetic-browser-secret');await route.fulfill({status:502,contentType:'application/json',body:'{"detail":"Synthetic failure"}'});});
- await dialog.getByLabel('Authorize a synthetic image test').check();await dialog.getByRole('button',{name:'Test connection'}).click();await expect(dialog.getByRole('alert')).toContainText('Vision test failed.');
+ await page.route('**/api/provider/test',async route=>{expect(route.request().postDataJSON().authorize_synthetic).toBe(true);expect(route.request().postData()).not.toContain('synthetic-browser-secret');await route.fulfill({status:502,contentType:'application/json',body:'{"detail":"AI service rejected the API credentials."}'});});
+ await dialog.getByLabel('Authorize a synthetic image test').check();await dialog.getByRole('button',{name:'Test connection'}).click();await expect(dialog.getByRole('alert')).toContainText('AI service rejected the API credentials.');
  await dialog.evaluate(el=>el.scrollTop=0);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:'.local/review/ai-settings-phone.png'});
  await page.setViewportSize({width:1280,height:900});await page.screenshot({path:'.local/review/ai-settings-desktop.png'});
 });

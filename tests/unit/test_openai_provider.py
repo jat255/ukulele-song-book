@@ -102,3 +102,66 @@ def test_bad_compatible_results_are_sanitized(response):
     with pytest.raises(ValueError, match="Vision conversion failed") as error:
         adapter.convert(VisionRequest([SelectedPage(1, b"synthetic-image", "hash")]))
     assert "synthetic-key" not in str(error.value)
+
+
+@pytest.mark.parametrize(
+    "status,code",
+    [
+        (401, "provider_auth"),
+        (403, "provider_auth"),
+        (429, "provider_rate_limit"),
+        (404, "provider_model_or_endpoint"),
+        (413, "provider_request_too_large"),
+        (400, "provider_request_invalid"),
+        (503, "provider_unavailable"),
+    ],
+)
+def test_provider_failures_expose_only_safe_actionable_codes(status, code):
+    from server.songbook.imports.providers.openai_compatible import CompatibleProvider
+
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                status, text="private provider payload synthetic-key"
+            )
+        )
+    )
+    adapter = CompatibleProvider(
+        "https://example.test/v1", "synthetic-key", "vision", client=client
+    )
+    with pytest.raises(ValueError) as caught:
+        adapter.convert(VisionRequest([SelectedPage(1, b"image", "hash")]))
+    assert getattr(caught.value, "code", None) == code
+    assert "private provider payload" not in str(
+        caught.value
+    ) and "synthetic-key" not in str(caught.value)
+
+
+def test_truncated_and_timeout_responses_have_distinct_feedback():
+    from server.songbook.imports.providers.openai_compatible import CompatibleProvider
+
+    def timeout(request):
+        raise httpx.ReadTimeout("private request context", request=request)
+
+    for transport, code in [
+        (httpx.MockTransport(timeout), "provider_timeout"),
+        (
+            httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200, json={"choices": [{"finish_reason": "length"}]}
+                )
+            ),
+            "provider_output_truncated",
+        ),
+    ]:
+        adapter = CompatibleProvider(
+            "https://example.test/v1",
+            "synthetic-key",
+            "vision",
+            client=httpx.Client(transport=transport),
+        )
+        with pytest.raises(ValueError) as error:
+            adapter.convert(VisionRequest([SelectedPage(1, b"image", "hash")]))
+        assert error.value.code == code and "private request context" not in str(
+            error.value
+        )

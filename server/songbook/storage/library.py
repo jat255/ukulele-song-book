@@ -18,6 +18,32 @@ class LibraryIndex:
                     Path(__file__).parent / "migrations/004_library_metadata.sql"
                 ).read_text()
             )
+            db.executescript(
+                (
+                    Path(__file__).parent / "migrations/010_source_library.sql"
+                ).read_text()
+            )
+
+    def delete_source(self, ident: str, expected: int) -> None:
+        """Remove an unarranged source from browsing, retaining its managed original."""
+        with connect(self.store.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if not db.execute("SELECT 1 FROM sources WHERE id=?", (ident,)).fetchone():
+                raise KeyError(ident)
+            if db.execute(
+                "SELECT 1 FROM arrangement_sources WHERE source_id=?", (ident,)
+            ).fetchone():
+                raise ConflictError("Source now belongs to an arrangement")
+            db.execute(
+                "INSERT OR IGNORE INTO source_library_metadata(source_id) VALUES (?)",
+                (ident,),
+            )
+            cursor = db.execute(
+                "UPDATE source_library_metadata SET deleted=1,revision=revision+1 WHERE source_id=? AND revision=? AND deleted=0",
+                (ident, expected),
+            )
+            if not cursor.rowcount:
+                raise ConflictError("Source changed")
 
     def metadata(self, ident: str) -> dict:
         with connect(self.store.database) as db:
@@ -162,7 +188,7 @@ class LibraryIndex:
         if not favorites_only and not tags and not recent:
             with connect(self.store.database) as db:
                 sources = db.execute(
-                    "SELECT s.id,s.original_name FROM sources s WHERE NOT EXISTS (SELECT 1 FROM arrangement_sources r WHERE r.source_id=s.id)"
+                    "SELECT s.id,s.original_name,coalesce(m.revision,0) AS metadata_revision FROM sources s LEFT JOIN source_library_metadata m ON m.source_id=s.id WHERE coalesce(m.deleted,0)=0 AND NOT EXISTS (SELECT 1 FROM arrangement_sources r WHERE r.source_id=s.id)"
                 ).fetchall()
             for source in sources:
                 if all(
@@ -173,6 +199,7 @@ class LibraryIndex:
                         {
                             "id": source["id"],
                             "source_only": True,
+                            "metadata_revision": source["metadata_revision"],
                             "title": source["original_name"],
                             "artist": "",
                             "favorite": False,

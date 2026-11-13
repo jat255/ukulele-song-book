@@ -5,6 +5,7 @@ import json
 
 import httpx
 
+from ..failures import ConversionFailure, http_failure
 from .base import ProviderStatus, VisionDraft, VisionRequest
 from .prompt import transcription_prompt
 
@@ -85,7 +86,13 @@ class AnthropicProvider:
             if data.get("model") != self.model:
                 raise ValueError("Provider response model differs from authorization")
             if data.get("stop_reason") != "end_turn":
-                raise ValueError("Provider response incomplete")
+                raise ConversionFailure(
+                    "provider_output_truncated"
+                    if data.get("stop_reason") == "max_tokens"
+                    else "provider_refused"
+                    if data.get("stop_reason") == "refusal"
+                    else "provider_invalid_response"
+                )
             text = "".join(
                 item.get("text", "")
                 for item in data["content"]
@@ -112,5 +119,13 @@ class AnthropicProvider:
                 and "output_tokens" in data.get("usage", {})
                 else None,
             )
-        except (httpx.HTTPError, KeyError, TypeError, ValueError):
-            raise ValueError("Vision conversion failed or was incomplete") from None
+        except ConversionFailure:
+            raise
+        except httpx.TimeoutException:
+            raise ConversionFailure("provider_timeout") from None
+        except httpx.HTTPStatusError as error:
+            raise ConversionFailure(http_failure(error.response.status_code)) from None
+        except httpx.RequestError:
+            raise ConversionFailure("provider_network") from None
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+            raise ConversionFailure("provider_invalid_response") from None

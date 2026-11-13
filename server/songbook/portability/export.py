@@ -132,6 +132,7 @@ def _catalog(database: Path) -> dict[str, list[dict]]:
         "arrangement_revisions": "SELECT arrangement_id,revision FROM arrangement_revisions",
         "revision_events": "SELECT id,arrangement_id,revision,created_at FROM revision_events",
         "sources": "SELECT id,sha256,original_name,kind,path FROM sources",
+        "source_library_metadata": "SELECT source_id,revision,deleted FROM source_library_metadata",
         "arrangement_sources": "SELECT arrangement_id,source_id,pages_json,crop_asset_id FROM arrangement_sources",
         "assets": "SELECT id,sha256,path FROM assets",
         "library_metadata": "SELECT arrangement_id,revision,favorite,notes,last_played,deleted FROM library_metadata",

@@ -7,6 +7,7 @@ import uuid
 
 from ..storage.arrangements import ConflictError
 from ..storage.db import connect
+from .failures import ConversionFailure
 from .jobs import ImportJobs
 
 
@@ -45,14 +46,23 @@ def run_once(jobs: ImportJobs, worker_id: str, provider=None, pdf_jobs=None) -> 
         elif provider is not None:
             jobs.process_ai(job["id"], worker_id, provider)
         else:
-            raise ValueError("Provider not configured")
+            raise ConversionFailure("provider_not_configured")
     except ConflictError:
         pass  # A replacement worker owns the job now.
-    except Exception:  # noqa: BLE001 -- no exception text or source content enters logs
+    except Exception as error:  # noqa: BLE001 -- only whitelisted codes are stored
+        code = (
+            error.code
+            if isinstance(error, ConversionFailure)
+            else {
+                "local": "local_pdf_failed",
+                "direct": "source_unavailable",
+                "ai": "ai_pdf_failed",
+            }.get(job["method"], "conversion_failed")
+        )
         with connect(jobs.store.database) as db:
             db.execute(
-                "UPDATE import_jobs SET state='failed',error_code='conversion_failed',worker_id=NULL,lease_until=NULL WHERE id=? AND worker_id=? AND state='processing'",
-                (job["id"], worker_id),
+                "UPDATE import_jobs SET state='failed',error_code=?,worker_id=NULL,lease_until=NULL WHERE id=? AND worker_id=? AND state='processing'",
+                (code, job["id"], worker_id),
             )
     finally:
         stop.set()

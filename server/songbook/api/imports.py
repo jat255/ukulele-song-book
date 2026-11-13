@@ -8,6 +8,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from ..imports.jobs import FullPdfSelectionError
 from ..imports.service import SUPPORTED, resolve_selection, scan_source_root
 from ..storage.arrangements import ConflictError
 from ..storage.db import connect
@@ -85,6 +86,8 @@ def enqueue(
         return request.app.state.imports.enqueue_import(
             body.source_id, body.selection, body.method, body.idempotency_key
         )
+    except FullPdfSelectionError as error:
+        raise HTTPException(400, detail=str(error)) from None
     except ConflictError:
         raise HTTPException(
             409, detail="Request conflicts with an existing import"

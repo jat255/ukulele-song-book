@@ -144,7 +144,8 @@ def test_worker_records_failures_and_heartbeat_without_source_text(tmp_path):
     assert run_once(jobs, "worker")
     failed = jobs.get_job(job["id"])
     assert failed["state"] == "failed"
-    assert failed["error_code"] == "conversion_failed"
+    assert failed["error_code"] == "local_pdf_failed"
+    assert failed["error_details"]["message"] == "Local PDF text extraction failed."
     assert "not a pdf" not in str(failed)
     with connect(store.database) as db:
         assert (
@@ -517,3 +518,48 @@ def test_lease_renewal_respects_worker_ownership(tmp_path):
     assert jobs.claim_job("second", now=111, lease_seconds=10) is None
     assert jobs.claim_job("second", now=116, lease_seconds=10)
     assert not jobs.renew_lease(job["id"], "first", now=117, lease_seconds=10)
+
+
+def test_worker_retains_safe_provider_failure_feedback(tmp_path):
+    from pypdf import PdfWriter
+
+    from server.songbook.imports.failures import ConversionFailure
+    from server.songbook.imports.providers.base import ProviderStatus
+    from server.songbook.imports.worker import run_once
+
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    buffer.seek(0)
+    store = LibraryStore(tmp_path)
+    source = store.register_source(buffer, "feedback.pdf", "pdf")
+    jobs = ImportJobs(store)
+    job = jobs.enqueue_import(
+        source.id,
+        [
+            {
+                "pages": [1],
+                "provider": "synthetic",
+                "model": "test",
+                "authorization": True,
+            }
+        ],
+        "ai",
+        "feedback",
+    )
+
+    class Provider:
+        def status(self):
+            return ProviderStatus(True, "synthetic", "test")
+
+        def convert(self, request):
+            raise ConversionFailure("provider_auth")
+
+    assert run_once(jobs, "worker", Provider())
+    result = jobs.get_job(job["id"])
+    assert result["error_code"] == "provider_auth"
+    assert (
+        result["error_details"]["message"] == "AI service rejected the API credentials."
+    )
+    assert not result["error_details"]["retryable"]
