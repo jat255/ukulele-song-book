@@ -9,7 +9,7 @@ from server.songbook.imports.providers.base import SelectedPage, VisionRequest
 
 
 @pytest.mark.parametrize("kind", ["anthropic", "compatible"])
-def test_both_providers_send_character_anchor_examples_and_page_order(kind):
+def test_both_providers_send_character_anchor_examples(kind):
     captured = []
 
     def reply(request):
@@ -59,8 +59,20 @@ def test_both_providers_send_character_anchor_examples_and_page_order(kind):
         for item in captured[0]["messages"][0]["content"]
         if item["type"] == "text"
     )
-    assert "si[Am]lver" in prompt
+    assert "sil[Am]ver" in prompt
     assert "[C]Blue  [G]sky" in prompt
-    assert "2, 5" in prompt
     assert "removing" in prompt and "unchanged" in prompt
     assert "chord-only" in prompt and "uncertainties" in prompt
+
+
+def test_prompt_distinguishes_timing_marks_from_lyrics_and_labels_sections():
+    from server.songbook.imports.providers.prompt import transcription_prompt
+
+    prompt = transcription_prompt([1])
+    assert "com-[E]-pete" in prompt
+    assert "com[E]pete" in prompt
+    assert "[C/E]" in prompt
+    assert "tablature" in prompt
+    assert "{start_of_verse}" in prompt and "{end_of_verse}" in prompt
+    assert "{start_of_chorus}" in prompt and "{end_of_chorus}" in prompt
+    assert "uncertainties" in prompt
