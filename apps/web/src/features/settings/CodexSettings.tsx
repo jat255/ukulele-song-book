@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
+import {UsageBars, type Usage} from '../codex/Usage';
 
 type Status = {connected:boolean; email:string|null; plan:string|null; models:{id:string;name:string;default:boolean}[]};
-type Usage = {primary:{used_percent:number;window_minutes:number|null;resets_at:number|null}|null;secondary:{used_percent:number;window_minutes:number|null;resets_at:number|null}|null};
+
 
 export function CodexSettings({csrf}:{csrf:string}) {
   const [status,setStatus]=useState<Status|null>(null);
@@ -21,8 +22,8 @@ export function CodexSettings({csrf}:{csrf:string}) {
         setLogin(null);
         const result=await fetch('/api/codex/usage');
         setUsage(result.ok ? await result.json() as Usage : null);
-      }
-    } catch(error) {setMessage(error instanceof Error?error.message:'Could not check Codex.');}
+      } else setUsage(null);
+    } catch(error) {setUsage(null);setMessage(error instanceof Error?error.message:'Could not check Codex.');}
   }
   useEffect(()=>{void refresh();},[]);
   useEffect(()=>{if(!login)return;const id=setInterval(()=>void refresh(),5000);return ()=>clearInterval(id);},[login]);
@@ -35,5 +36,5 @@ export function CodexSettings({csrf}:{csrf:string}) {
       if(path==='login')setLogin(result); else if(path==='cancel-login'){setLogin(null);setMessage('Sign-in cancelled.');} else {setStatus(null);setUsage(null);await refresh();}
     } catch(error){setMessage(error instanceof Error?error.message:'Codex request failed.');} finally {setBusy(false);}
   }
-  return <section className="ai-settings"><h3>Codex subscription</h3><p>Use a signed-in ChatGPT account to convert PDF pages. Submitted pages use your plan and require review.</p>{status?.connected ? <><p>Connected{status.email ? ` as ${status.email}` : ''}{status.plan ? ` · ${status.plan}` : ''}</p><button disabled={busy} onClick={()=>void action('logout')}>Sign out of Codex</button>{usage ? <ul>{(['primary','secondary'] as const).map(key=>usage[key] && <li key={key}>{key==='primary'?'Primary':'Secondary'} usage: {usage[key]!.used_percent}%{usage[key]!.window_minutes ? ` of ${usage[key]!.window_minutes}-minute window` : ''}{usage[key]!.resets_at ? `, resets ${new Date(usage[key]!.resets_at!*1000).toLocaleString()}` : ''}</li>)}</ul> : <p>Usage details are unavailable.</p>}</> : <button disabled={busy || !!login} onClick={()=>void action('login')}>Sign in to Codex</button>}{login && <><p>Open <a href={login.verification_url} target="_blank" rel="noreferrer">Codex device sign-in</a> and enter <strong>{login.user_code}</strong>. This page will check for completion.</p><button disabled={busy} onClick={()=>void action('cancel-login')}>Cancel sign-in</button></>}{message && <p role="alert">{message}</p>}<button disabled={busy} onClick={()=>void refresh()}>Refresh Codex status</button></section>;
+  return <section className="ai-settings"><h3>Codex subscription</h3><p>Use a signed-in ChatGPT account to convert PDF pages. Submitted pages use your plan and require review.</p>{status?.connected ? <><p>Connected{status.email ? ` as ${status.email}` : ''}{status.plan ? ` · ${status.plan}` : ''}</p><button disabled={busy} onClick={()=>void action('logout')}>Sign out of Codex</button><UsageBars usage={usage}/></> : <button disabled={busy || !!login} onClick={()=>void action('login')}>Sign in to Codex</button>}{login && <><p>Open <a href={login.verification_url} target="_blank" rel="noreferrer">Codex device sign-in</a> and enter <strong>{login.user_code}</strong>. This page will check for completion.</p><button disabled={busy} onClick={()=>void action('cancel-login')}>Cancel sign-in</button></>}{message && <p role="alert">{message}</p>}<button disabled={busy} onClick={()=>void refresh()}>Refresh Codex status</button></section>;
 }

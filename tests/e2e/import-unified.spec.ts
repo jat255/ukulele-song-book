@@ -43,3 +43,25 @@ test('drop zone accepts PDF files and rejects other files', async ({page}) => {
   await expect(page.getByText('Only PDF files can be added.')).toBeVisible();
   await expect(page.getByRole('button',{name:'Queue PDFs'})).toBeEnabled();
 });
+
+test('shows Codex usage bars in settings and the imports popover', async ({page}) => {
+  await page.route('**/api/codex/status', route => route.fulfill({json:{connected:true,email:null,plan:'plus',models:[{id:'gpt-6.1-terra',name:'Terra',default:true}]}}));
+  await page.route('**/api/codex/usage', route => route.fulfill({json:{primary:{used_percent:30,window_minutes:300,resets_at:1800000000},secondary:{used_percent:6,window_minutes:10080,resets_at:1800500000}}}));
+  await page.goto('/settings');
+  await expect(page.getByRole('progressbar',{name:'5-hour limit'})).toHaveAttribute('value','30');
+  await expect(page.getByRole('progressbar',{name:'Weekly limit'})).toHaveAttribute('value','6');
+  await page.goto('/imports');
+  await page.getByRole('button',{name:'Usage'}).click();
+  const popover=page.getByLabel('Usage options');
+  await expect(popover.getByRole('progressbar',{name:'5-hour limit'})).toHaveAttribute('value','30');
+  await expect(popover.getByRole('progressbar',{name:'Weekly limit'})).toHaveAttribute('value','6');
+});
+
+test('shows unavailable usage without presenting zero percent', async ({page}) => {
+  await page.route('**/api/codex/status', route => route.fulfill({json:{connected:true,email:null,plan:null,models:[{id:'gpt-6.1-terra',name:'Terra',default:true}]}}));
+  await page.route('**/api/codex/usage', route => route.fulfill({json:{primary:null,secondary:{used_percent:6,window_minutes:10080,resets_at:null}}}));
+  await page.goto('/settings');
+  await expect(page.getByText('5-hour limit unavailable')).toBeVisible();
+  await expect(page.getByRole('progressbar',{name:'5-hour limit'})).toHaveCount(0);
+  await expect(page.getByRole('progressbar',{name:'Weekly limit'})).toHaveAttribute('value','6');
+});

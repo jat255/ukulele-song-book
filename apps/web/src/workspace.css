@@ -258,3 +258,18 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .pdf-selection {max-width:32rem;margin:0 0 1rem;color:#35543f;overflow-wrap:anywhere}
 .pdf-selection ul {margin:.35rem 0 0;padding-left:1.25rem}
 .pdf-file-error {color:#914532}
+.imports-heading {display:flex;align-items:center;gap:.75rem}
+.imports-heading h2 {margin:0}
+.workspace .usage-popover > button {display:flex;align-items:center;gap:.4rem;border:1px solid #c7d4c8;background:#fffdf9;font-size:.85rem}
+.usage-popover > button::before {content:'◔';font-size:1.15rem;line-height:1}
+.codex-usage {display:grid;gap:1.15rem;max-width:36rem;margin:1.25rem 0}
+.codex-usage-row {display:grid;gap:.4rem;min-width:0}
+.codex-usage-heading {display:flex;justify-content:space-between;gap:1rem;font-size:.9rem;color:#35543f}
+.codex-usage-heading span {font-weight:600;white-space:nowrap}
+.codex-usage progress {appearance:none;width:100%;height:.65rem;border:0;border-radius:999px;background:#e1e8de;overflow:hidden}
+.codex-usage progress::-webkit-progress-bar {background:#e1e8de;border-radius:999px}
+.codex-usage progress::-webkit-progress-value {background:#43805c;border-radius:999px}
+.codex-usage progress::-moz-progress-bar {background:#43805c;border-radius:999px}
+.codex-usage small {color:#61705f;font-size:.8rem}
+.usage-popover .codex-usage {margin:.4rem 0;gap:1rem}
+.usage-popover .codex-usage-unavailable,.usage-popover p {margin:.3rem 0}
