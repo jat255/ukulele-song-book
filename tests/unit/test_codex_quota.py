@@ -6,8 +6,10 @@ from server.songbook.imports.codex_provider import CodexVisionProvider
 from server.songbook.imports.providers.base import VisionDraft, VisionRequest
 
 
-def snapshot(primary, secondary=10, *, reset=None):
-    reset = reset if reset is not None else int(time.time()) + 3600
+RESET = int(time.time()) + 3600
+
+
+def snapshot(primary, secondary=10, *, reset=RESET):
     return {
         "primary": {"used_percent": primary, "window_minutes": 300, "resets_at": reset},
         "secondary": {
