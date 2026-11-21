@@ -34,7 +34,7 @@ export function UsagePopover() {
     try {const response=await fetch('/api/codex/usage');setUsage(response.ok ? await response.json() as Usage : null);}
     catch {setUsage(null);} finally {setLoading(false);}
   },[]);
-  return <ActionPopover label="Usage" className="usage-popover" onOpen={()=>void refresh()}>
+  return <ActionPopover label="Usage" className="usage-popover" onOpen={()=>void refresh()} icon={<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16M6 16v-4m6 4V6m6 10V9"/></svg>}>
     <strong>Codex usage</strong>
     {loading ? <p>Loading usage…</p> : <UsageBars usage={usage}/>}
     <button type="button" disabled={loading} onClick={()=>void refresh()}>Refresh usage</button>

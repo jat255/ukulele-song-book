@@ -258,10 +258,11 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .pdf-selection {max-width:32rem;margin:0 0 1rem;color:#35543f;overflow-wrap:anywhere}
 .pdf-selection ul {margin:.35rem 0 0;padding-left:1.25rem}
 .pdf-file-error {color:#914532}
-.imports-heading {display:flex;align-items:center;gap:.75rem}
+.imports-heading {display:flex;align-items:center;gap:.5rem}
 .imports-heading h2 {margin:0}
-.workspace .usage-popover > button {display:flex;align-items:center;gap:.4rem;border:1px solid #c7d4c8;background:#fffdf9;font-size:.85rem}
-.usage-popover > button::before {content:'◔';font-size:1.15rem;line-height:1}
+.workspace .usage-popover > button {display:grid;place-items:center;width:36px;height:36px;padding:8px;border:0;border-radius:50%;background:transparent;color:#647c6d}
+.workspace .usage-popover > button:hover,.workspace .usage-popover > button:focus-visible {background:#e3ebe2;color:#285b48}
+.usage-popover > button svg {width:20px;height:20px}
 .codex-usage {display:grid;gap:1.15rem;max-width:36rem;margin:1.25rem 0}
 .codex-usage-row {display:grid;gap:.4rem;min-width:0}
 .codex-usage-heading {display:flex;justify-content:space-between;gap:1rem;font-size:.9rem;color:#35543f}
