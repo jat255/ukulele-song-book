@@ -247,3 +247,14 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .setlists > form label {flex-basis:100%;font-size:.9rem;font-weight:600;margin:0}
 .setlists > form input {flex:1 1 15rem;min-width:0;min-height:42px}
 .setlists > form button {min-height:42px}
+.pdf-dropzone {position:relative;display:flex;flex-direction:column;align-items:center;gap:.45rem;max-width:32rem;margin:1rem 0;padding:1.5rem 1rem;border:2px dashed #a7bbaa;border-radius:10px;background:#f5f8f2;text-align:center;color:#35543f;transition:background .15s,border-color .15s}
+.pdf-dropzone--active {border-color:#285b48;background:#e2efe2}
+.pdf-dropzone-icon {display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%;background:#e2ede2;color:#285b48;font-size:1.5rem;line-height:1}
+.workspace .pdf-browse {display:inline-block;margin:.15rem 0;padding:.45rem .9rem;border:1px solid #8da995;border-radius:.45rem;background:#fff;color:#285b48;font-weight:600;cursor:pointer}
+.pdf-browse:hover {background:#eaf2ea}
+.pdf-dropzone:has(.pdf-input:focus-visible) .pdf-browse {outline:3px solid #d3953c;outline-offset:2px}
+.pdf-input {position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip-path:inset(50%)}
+.pdf-dropzone small {color:#61705f}
+.pdf-selection {max-width:32rem;margin:0 0 1rem;color:#35543f;overflow-wrap:anywhere}
+.pdf-selection ul {margin:.35rem 0 0;padding-left:1.25rem}
+.pdf-file-error {color:#914532}
