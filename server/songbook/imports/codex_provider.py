@@ -1,11 +1,13 @@
 """Codex SDK-backed vision adapter for reviewed imports."""
 
 import json
+import math
 import re
 import tempfile
 import time
 from collections import deque
 from contextlib import contextmanager
+from dataclasses import replace
 from pathlib import Path
 
 from openai_codex import ApprovalMode, CodexError, LocalImageInput, TextInput
@@ -90,6 +92,71 @@ class CodexVisionProvider:
         return ProviderStatus(available, "codex", self.model, page_limit=5)
 
     def convert(self, request: VisionRequest) -> VisionDraft:
+        def snapshot():
+            try:
+                value = self.service.usage()
+                return value if isinstance(value, dict) else {}
+            except Exception:  # noqa: BLE001 - usage data must not block conversion
+                return {}
+
+        before = snapshot()
+        started_at = time.time()
+        try:
+            result = self._convert(request)
+        finally:
+            after = snapshot()
+            finished_at = time.time()
+            quota = {}
+            for key in ("primary", "secondary"):
+                start, end = before.get(key), after.get(key)
+                delta = None
+                if isinstance(start, dict) and isinstance(end, dict):
+                    first, last = start.get("used_percent"), end.get("used_percent")
+                    if (
+                        isinstance(first, (int, float))
+                        and not isinstance(first, bool)
+                        and isinstance(last, (int, float))
+                        and not isinstance(last, bool)
+                        and math.isfinite(first)
+                        and math.isfinite(last)
+                        and 0 <= first <= last <= 100
+                        and start.get("resets_at") is not None
+                        and isinstance(start.get("resets_at"), (int, float))
+                        and not isinstance(start.get("resets_at"), bool)
+                        and started_at < start["resets_at"]
+                        and finished_at < start["resets_at"]
+                        and start.get("resets_at") == end.get("resets_at")
+                        and start.get("window_minutes") is not None
+                        and start.get("window_minutes") == end.get("window_minutes")
+                    ):
+                        delta = round(last - first, 4)
+                quota[key] = {
+                    "delta_percent": delta,
+                    "before_remaining": round(100 - first, 4)
+                    if delta is not None
+                    else None,
+                    "after_remaining": round(100 - last, 4)
+                    if delta is not None
+                    else None,
+                    "window_minutes": end.get("window_minutes")
+                    if isinstance(end, dict)
+                    else None,
+                }
+            if self.on_progress is not None:
+                parts = [
+                    f"{key}: {item['delta_percent']:g} percentage points"
+                    if item["delta_percent"] is not None
+                    else f"{key}: unavailable"
+                    for key, item in quota.items()
+                ]
+                self.on_progress(
+                    "\n[Quota estimate] "
+                    + "; ".join(parts)
+                    + ". Shared account activity and reporting delays can affect this comparison.\n"
+                )
+        return replace(result, quota_usage=quota)
+
+    def _convert(self, request: VisionRequest) -> VisionDraft:
         if not self.status().available or not 1 <= len(request.pages) <= 5:
             raise ConversionFailure("provider_not_configured")
         schema = {
@@ -237,8 +304,14 @@ class CodexVisionProvider:
             if result.status != TurnStatus.completed:
                 raise RuntimeError("Codex turn did not complete")
             data = json.loads(result.final_response or "")
-            if isinstance(data, dict) and isinstance(data.get("source"), str) and not data["source"].strip():
-                log("\n[Result] Codex returned an empty draft; see the response above for its explanation.\n")
+            if (
+                isinstance(data, dict)
+                and isinstance(data.get("source"), str)
+                and not data["source"].strip()
+            ):
+                log(
+                    "\n[Result] Codex returned an empty draft; see the response above for its explanation.\n"
+                )
                 raise ConversionFailure("codex_empty_draft")
             if (
                 not isinstance(data.get("source"), str)

@@ -24,6 +24,7 @@ class VisionDraft:
     usage: dict
     request_id: str
     actual_cost: float | None = None
+    quota_usage: dict | None = None
 
 
 @dataclass(frozen=True)

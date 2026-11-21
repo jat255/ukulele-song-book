@@ -67,3 +67,13 @@ test('shows unavailable usage without presenting zero percent', async ({page}) =
   await expect(page.getByRole('progressbar',{name:'5-hour limit'})).toHaveCount(0);
   await expect(page.getByRole('progressbar',{name:'Weekly limit'})).toHaveAttribute('value','6');
 });
+
+test('reports quota change next to a completed conversion', async ({page}) => {
+  await page.route('**/api/codex/status', route => route.fulfill({json:{connected:true,models:[{id:'gpt-6.1-terra',name:'Terra',default:true}]}}));
+  await page.route('**/api/imports', route => route.fulfill({json:[{id:'job',source_id:'source',state:'needs-review',method:'ai',error_code:null,selection:[{pages:[1],provider:'codex'}],drafts:[{id:'draft',ordinal:0,source:'{title: Song}\n[C]Hello',revision:'rev',diagnostics:[],uncertainties:[],pages:[],accepted_id:null,provider_metadata:{quota_usage:{primary:{delta_percent:3,before_remaining:80,after_remaining:77,window_minutes:300},secondary:{delta_percent:null,window_minutes:10080}}}}]}]}));
+  await page.goto('/imports');
+  const row=page.getByRole('row').filter({hasText:'Needs review'});
+  await expect(row.getByText('5-hour: 80% → 77% remaining (3 percentage points used)')).toBeVisible();
+  await expect(row.getByText('Weekly: comparison unavailable')).toBeVisible();
+  await expect(row.getByText(/Shared account activity/)).toBeVisible();
+});

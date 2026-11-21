@@ -62,3 +62,10 @@ docker compose -f compose.yaml -f compose.lan.yaml up -d --build
 ```
 
 Configure the trusted reverse proxy to terminate TLS and forward requests to `127.0.0.1:8000`, overwriting `X-Forwarded-Proto` with `https`. The app accepts this one configured origin and uses secure session cookies. Keep port 8000 bound to loopback; do not expose the backend directly. The API and worker use separate Docker networks so the worker cannot reach the API relay. Do not attach untrusted containers to the API network: its loopback relay treats forwarded protocol headers from that network as trusted. Configure DNS, certificate trust, and the reverse proxy separately. This override does not create or publish a hostname or change your network configuration.
+
+Each new Codex conversion compares the account's remaining 5-hour and weekly
+quota before and after the attempt. The import queue shows the observed change
+for completed drafts; failed attempts include it in their Codex activity log.
+These are estimates, not measured costs: other activity on the account and
+reporting delays or rounding can affect the change. A window that resets or
+cannot be read is reported as unavailable. Earlier drafts have no comparison.

@@ -127,6 +127,7 @@ class AIConversionService:
                     "model": vision.model,
                     "usage": vision.usage,
                     "actual_cost": vision.actual_cost,
+                    "quota_usage": vision.quota_usage,
                 },
                 needs_visual_review=True,
                 diagnostics=[

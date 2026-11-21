@@ -274,3 +274,6 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .codex-usage small {color:#61705f;font-size:.8rem}
 .usage-popover .codex-usage {margin:.4rem 0;gap:1rem}
 .usage-popover .codex-usage-unavailable,.usage-popover p {margin:.3rem 0}
+
+.quota-summary {margin-top:.55rem;max-width:25rem;color:#52674d;font-size:.8rem;line-height:1.45;white-space:normal}
+.quota-summary small {display:block;margin-top:.35rem;color:#697763}

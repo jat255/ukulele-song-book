@@ -432,7 +432,12 @@ def test_ai_conversion_uses_only_authorized_selected_pages_and_requires_review(
         def convert(self, request):
             self.calls.append([page.page for page in request.pages])
             return VisionDraft(
-                "[C]Synthetic", ["Uncertain chord"], "test-model", {}, "synthetic"
+                "[C]Synthetic",
+                ["Uncertain chord"],
+                "test-model",
+                {},
+                "synthetic",
+                quota_usage={"primary": {"delta_percent": 3}},
             )
 
     store = LibraryStore(tmp_path)
@@ -455,6 +460,7 @@ def test_ai_conversion_uses_only_authorized_selected_pages_and_requires_review(
     draft = jobs.get_job(job["id"])["drafts"][0]
     assert draft["source"] == "[C]Synthetic"
     assert draft["provider_metadata"]["model"] == "test-model"
+    assert draft["provider_metadata"]["quota_usage"]["primary"]["delta_percent"] == 3
     assert draft["provenance"][0]["page"] == 2
     assert draft["diagnostics"]
     with pytest.raises(ValueError, match="acknowledgement"):
