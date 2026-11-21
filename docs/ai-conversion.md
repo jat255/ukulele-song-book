@@ -15,11 +15,9 @@ are not supported. Custom services must accept image requests and return a
 complete JSON draft with `source` and `uncertainties`; providers/models that do
 not support this contract return a visible failure rather than fabricated music.
 
-Saving settings never contacts the service. **Enable AI conversion** makes it
-available for future imports; each import still requires explicit authorization
-of the selected pages and service/model. At most five full pages can be submitted
-per request. Cropped AI imports are not supported. Ordinary local PDF extraction
-does not contact an AI service. Output always enters draft review.
+Saving settings never contacts the service. The current Imports page uses Codex
+for PDF conversion; these alternate provider settings are not offered there.
+Each Codex PDF can contain up to five full pages, and output enters draft review.
 
 **Test connection** requires saved settings and a separate synthetic-image
 checkbox. It sends only an app-generated test image, can consume provider credits,
@@ -76,9 +74,6 @@ history remains in the queue. Processing attempts cannot be discarded; wait
 until processing finishes. A changed draft or acceptance in progress produces
 a conflict rather than silently removing newer work.
 
-**Start over** discards pending work and prepares the retained source for a new
-import, preserving the unaccepted page/crop selection without requiring another
-upload. Review the settings and click Import source. AI is deliberately off for
-this new attempt until you select the external-submission checkbox again. Merely
-preparing a retry does not contact a provider. A new AI submission may consume
-credits. Existing drafts are not rewritten when the prompt changes.
+To submit a new attempt, choose the original PDF again in the import form.
+Queuing sends it to Codex and may consume subscription capacity. Existing drafts
+are not rewritten when the prompt changes.

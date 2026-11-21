@@ -37,21 +37,8 @@ Run the durable import worker in a second terminal with the same
 uv run songbook worker
 ```
 
-The Imports page accepts local PDF and ChordPro files. For PDFs, enter one-based
-page numbers separated by commas, and separate songs with semicolons. Optional
-normalized crop coordinates apply to the chosen pages. Every PDF extraction
-requires review against the retained original. Empty extraction cannot be
-accepted as music; add and review the missing notation first.
-
-To browse optional read-only input directories, set `SONGBOOK_SOURCE_ROOTS` to a
-JSON object mapping names to absolute local directories before starting the
-server. The application copies selected sources into managed storage and does
-not modify the input folders. Keep machine-specific paths out of version control.
-
-The optional vision adapter is disabled unless the operator sets
-`SONGBOOK_ALLOW_EXTERNAL_AI=true`, `ANTHROPIC_API_KEY`, and
-`SONGBOOK_ANTHROPIC_MODEL` in the server and worker environments. In that mode,
-the review screen requires an explicit action naming the provider and selected
-full pages; costs may be unknown. Provider responses and fidelity have not been
-verified live. Do not enable it unless external submission and possible charges
-are authorized.
+The Imports page converts one or more PDFs with Codex. Sign in to Codex in
+Settings, choose the files and a model, then select Queue PDFs. Each PDF must
+contain one song and at most five pages. Queuing sends the files to Codex using
+your subscription. Review each draft against its retained original before
+accepting it into the library.
