@@ -193,3 +193,30 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .import-failure strong {font-weight:600}
 .import-failure p {margin:.35rem 0;color:#61705f}
 .import-failure small {color:#7c746b;font-size:.72rem}
+.chord-editor {margin:1rem 0;padding:1rem;border:1px solid #d8dfd6;border-radius:.65rem;background:#fffdf9}
+.chord-editor h4 {margin:0 0 .35rem}
+.chord-editor-help {margin:0 0 .8rem;color:#607064;font-size:.9rem}
+.chord-editor-toolbar {display:flex;align-items:center;flex-wrap:wrap;gap:.5rem}
+.chord-editor-toolbar label {display:flex;align-items:center;gap:.4rem;margin:0}
+.chord-editor-toolbar input {width:9rem}
+.chord-editor-instruction {margin:.7rem 0;color:#285b48;font-size:.9rem}
+.chord-editor-error {color:#883f28}
+.chord-editor-sheet {margin-top:.8rem;padding:.5rem .75rem;background:white;border:1px solid #e2e8df;border-radius:.5rem;overflow-x:auto}
+.chord-editor-line {min-width:max-content}
+.chord-editor-line > p {color:#667566;font-size:.85rem}
+.chord-editor-blank {height:.8rem}
+.chord-editor-lyrics {display:flex;align-items:end;white-space:pre;font-family:ui-monospace,monospace;line-height:1.4}
+.chord-editor-cell {display:inline-flex;flex-direction:column;align-items:stretch;min-width:0}
+.chord-editor-chords {display:flex;align-items:end;height:2rem;gap:.1rem}
+.workspace .chord-editor-chords button {padding:.1rem .25rem;border-color:transparent;background:transparent;color:#285b48;font-weight:700;font-family:inherit;line-height:1.3}
+.workspace .chord-editor-chords button:hover {background:#eaf2ea}
+.workspace .chord-editor-chords button[aria-pressed="true"] {background:#285b48;color:white}
+.chord-editor-character,.workspace .chord-position {display:block;min-width:1ch;height:1.7rem;padding:0;border:0;border-radius:0;background:transparent;color:inherit;text-align:left;white-space:pre;font:inherit;line-height:1.7rem}
+.workspace .chord-position {background:#e8f2dd;box-shadow:inset 1px 0 #90ad84;cursor:pointer}
+.workspace .chord-position:hover {background:#c9e3ba}
+.chord-position { padding: 0 .15rem; border: 0; background: transparent; color: #666; cursor: pointer; }
+.chord-position:focus-visible { outline: 2px solid currentColor; }
+.codex-activity { margin-top: .5rem; max-width: 55rem; }
+.codex-activity summary { cursor: pointer; font-weight: 600; }
+.codex-activity pre { max-height: 32rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #f5f5f2; border: 1px solid #d2d9d3; padding: .75rem; font-size: .85rem; }
+.codex-activity-actions { display: flex; flex-wrap: wrap; gap: .5rem; }

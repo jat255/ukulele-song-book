@@ -39,6 +39,22 @@ def run_once(jobs: ImportJobs, worker_id: str, provider=None, pdf_jobs=None) -> 
     refresher = threading.Thread(target=renew, daemon=True)
     refresher.start()
     try:
+        if job["method"] == "ai" and job["selection"][0].get("provider") == "codex":
+            from .codex_provider import CodexVisionProvider
+            from .codex_service import CodexService, codex_home_for
+
+            jobs.append_activity(
+                job["id"],
+                worker_id,
+                f"\n=== Attempt {job['attempts']} ===\n[Worker] Preparing selected PDF pages.\n",
+            )
+            provider = CodexVisionProvider(
+                CodexService(codex_home_for(jobs.store.root)),
+                job["selection"][0]["model"],
+                on_progress=lambda text: jobs.append_activity(
+                    job["id"], worker_id, text
+                ),
+            )
         if job["method"] == "direct":
             jobs.process_direct(job["id"], worker_id)
         elif job["method"] == "local":
@@ -59,6 +75,10 @@ def run_once(jobs: ImportJobs, worker_id: str, provider=None, pdf_jobs=None) -> 
                 "ai": "ai_pdf_failed",
             }.get(job["method"], "conversion_failed")
         )
+        if job["method"] == "ai" and job["selection"][0].get("provider") == "codex":
+            jobs.append_activity(
+                job["id"], worker_id, f"\n[Worker] Conversion failed: {code}.\n"
+            )
         with connect(jobs.store.database) as db:
             db.execute(
                 "UPDATE import_jobs SET state='failed',error_code=?,worker_id=NULL,lease_until=NULL WHERE id=? AND worker_id=? AND state='processing'",

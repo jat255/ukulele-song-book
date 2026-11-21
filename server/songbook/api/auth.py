@@ -95,6 +95,20 @@ class AuthService:
             raise HTTPException(401, detail="Authentication required")
         return Principal(digest, row["csrf"])
 
+    def local_session(self) -> tuple[str, str]:
+        token = secrets.token_urlsafe(32)
+        csrf = secrets.token_urlsafe(32)
+        with connect(self.database) as db:
+            db.execute(
+                "INSERT INTO sessions VALUES (?,?,?)",
+                (
+                    hashlib.sha256(token.encode()).hexdigest(),
+                    csrf,
+                    time.time() + self.session_seconds,
+                ),
+            )
+        return token, csrf
+
     def revoke(self, principal: Principal) -> None:
         with connect(self.database) as db:
             db.execute(

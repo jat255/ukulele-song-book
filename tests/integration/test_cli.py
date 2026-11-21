@@ -31,3 +31,22 @@ def test_configured_source_roots_are_named_and_local(monkeypatch, tmp_path):
     settings = settings_from_environment()
     assert settings.library_root == tmp_path / "managed"
     assert settings.source_roots == {"music": tmp_path}
+
+
+def test_public_origin_requires_https_and_preserves_local_default(
+    monkeypatch, tmp_path
+):
+    import pytest
+
+    from server.songbook.config import settings_from_environment
+
+    monkeypatch.setenv("SONGBOOK_LIBRARY_ROOT", str(tmp_path))
+    monkeypatch.delenv("SONGBOOK_PUBLIC_ORIGIN", raising=False)
+    assert settings_from_environment().loopback_http is True
+    monkeypatch.setenv("SONGBOOK_PUBLIC_ORIGIN", "http://songbook.example")
+    with pytest.raises(ValueError):
+        settings_from_environment()
+    monkeypatch.setenv("SONGBOOK_PUBLIC_ORIGIN", "https://songbook.example")
+    settings = settings_from_environment()
+    assert settings.loopback_http is False
+    assert settings.allowed_origins == ("https://songbook.example",)

@@ -199,3 +199,47 @@ def test_ligatures_are_readable_after_unicode_normalization(tmp_path):
         "NFKD", " ".join(p.extract_text() for p in PdfReader(artifact.path).pages)
     )
     assert "office" in text and "flight" in text
+
+
+def test_preview_shrinks_long_lyric_to_keep_one_line(tmp_path):
+    from pypdf import PdfReader
+
+    from server.songbook.pdf.models import PdfRenderRequest
+    from server.songbook.pdf.render import render_pdf
+
+    lyric = " ".join(["synthetic"] * 8)
+    result = render_pdf(
+        PdfRenderRequest(
+            source="{title: Fit}\n" + lyric,
+            output_dir=tmp_path,
+            columns=2,
+            fit_lyric_lines=True,
+        )
+    )
+    text = PdfReader(result.path).pages[0].extract_text(extraction_mode="layout")
+    assert any(line.count("synthetic") == 8 for line in text.splitlines())
+
+
+def test_preview_uses_consistent_text_size_when_fitting_lines(tmp_path):
+    from pypdf import PdfReader
+
+    from server.songbook.pdf.models import PdfRenderRequest
+    from server.songbook.pdf.render import render_pdf
+
+    source = "{title: Fit}\nshortphrase\n" + " ".join(["longphrase"] * 7)
+    result = render_pdf(
+        PdfRenderRequest(
+            source=source, output_dir=tmp_path, columns=2, fit_lyric_lines=True
+        )
+    )
+    sizes = {}
+
+    def collect(text, cm, tm, font, size):
+        if "shortphrase" in text:
+            sizes["short"] = size
+        if "longphrase" in text:
+            sizes["long"] = size
+
+    for page in PdfReader(result.path).pages:
+        page.extract_text(visitor_text=collect)
+    assert sizes["short"] == sizes["long"]

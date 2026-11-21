@@ -35,7 +35,8 @@ COPY --from=build /app /app
 RUN apt-get update && apt-get install -y --no-install-recommends socat libatomic1 \
  && /app/.venv/bin/python -m playwright install --with-deps chromium \
  && rm -rf /var/lib/apt/lists/* \
- && mkdir -p /data && chown -R 10001:10001 /app /data /opt/songbook-browsers
+ && mkdir -p /data /codex && chown -R 10001:10001 /app /data /codex /opt/songbook-browsers \
+ && chmod 700 /codex
 USER 10001:10001
 EXPOSE 8080
 CMD ["sh", "-c", "songbook serve --host 127.0.0.1 --port 8000 & api=$!; trap 'kill $api 2>/dev/null' EXIT INT TERM; socat TCP-LISTEN:8080,reuseaddr,fork TCP:127.0.0.1:8000"]

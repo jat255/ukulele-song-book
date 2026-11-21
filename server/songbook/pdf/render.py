@@ -179,6 +179,27 @@ def render_pdf(request: PdfRenderRequest) -> PdfArtifact:
                 page.add_style_tag(
                     content=f"@page {{ size: {request.paper}; margin: {request.margins_mm}mm; }}"
                 )
+                if request.fit_lyric_lines:
+                    page.add_style_tag(
+                        content=".lyric-line, .lyric-line .lyric-fragment { white-space: nowrap; }"
+                    )
+                    too_small = page.locator(".music").evaluate_all("""songs => songs.some(song => {
+                        const lines = [...song.querySelectorAll('.lyric-line')];
+                        const base = parseFloat(getComputedStyle(song).fontSize);
+                        for (let i = 0; i < 3; i++) {
+                            const factor = Math.min(1, ...lines.map(line =>
+                                line.scrollWidth > line.clientWidth
+                                    ? (line.clientWidth - 1) / line.scrollWidth * 0.99 : 1));
+                            if (factor === 1) break;
+                            song.style.fontSize = `${parseFloat(getComputedStyle(song).fontSize) * factor}px`;
+                        }
+                        return parseFloat(getComputedStyle(song).fontSize) < Math.min(base, 8) ||
+                            lines.some(line => line.scrollWidth > line.clientWidth + 1);
+                    })""")
+                    if too_small:
+                        raise ValueError(
+                            "Lyric exceeds available column width at a readable size"
+                        )
                 page_height_mm = 279.4 if request.paper == "Letter" else 297
                 usable_height = (page_height_mm - 2 * request.margins_mm) * 96 / 25.4
                 too_tall = page.locator(".tab").evaluate_all(

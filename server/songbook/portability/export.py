@@ -45,6 +45,8 @@ def _sanitize(database: Path, portable: bool) -> None:
                 db.execute(f"DELETE FROM {table}")
         if portable and "auth_config" in tables:
             db.execute("DELETE FROM auth_config")
+        if "codex_job_activity" in tables:
+            db.execute("DELETE FROM codex_job_activity")
         if "import_jobs" in tables:
             if portable:
                 allowed = {"pages", "rectangles", "paired_source_id", "paired_pages"}

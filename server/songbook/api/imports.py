@@ -1,11 +1,12 @@
 """Authenticated import and draft review endpoints."""
 
 import tempfile
+import zipfile
 from dataclasses import asdict
 from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from ..imports.jobs import FullPdfSelectionError
@@ -16,6 +17,27 @@ from .auth import Principal, require_csrf, require_session
 
 router = APIRouter(prefix="/api/imports")
 principal_dependency = Depends(require_session)
+
+
+@router.post("/batches")
+async def upload_batch(request: Request, principal: Principal = principal_dependency):
+    """Stage a portable converter archive without requiring a worker."""
+    from ..imports.batches import import_archive
+
+    require_csrf(request, principal)
+    size = 0
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "batch.zip"
+        with path.open("wb") as stream:
+            async for chunk in request.stream():
+                size += len(chunk)
+                if size > 1024 * 1024 * 1024:
+                    raise HTTPException(413, detail="Batch exceeds size limit")
+                stream.write(chunk)
+        try:
+            return import_archive(path, request.app.state.store)
+        except (ValueError, OSError, zipfile.BadZipFile) as error:
+            raise HTTPException(400, detail=f"Invalid batch: {error}") from None
 
 
 class ImportRequest(BaseModel):
@@ -155,6 +177,17 @@ def register_scanned(
 def get_job(job_id: str, request: Request, principal: Principal = principal_dependency):
     try:
         return request.app.state.imports.get_job(job_id)
+    except KeyError:
+        raise HTTPException(404, detail="Import not found") from None
+
+
+@router.get("/{job_id}/activity")
+def get_activity(
+    job_id: str, request: Request, response: Response, principal: Principal = principal_dependency
+):
+    try:
+        response.headers["Cache-Control"] = "no-store"
+        return request.app.state.imports.get_activity(job_id)
     except KeyError:
         raise HTTPException(404, detail="Import not found") from None
 

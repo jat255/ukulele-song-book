@@ -59,7 +59,7 @@ https://docs.nvidia.com/nim/large-language-models/latest/advanced-use-cases/mult
 
 ## Chord placement and trying again
 
-Both adapters now share the `chord-placement-v2` transcription prompt. It teaches
+Both adapters now share the `chord-placement-v3` transcription prompt. It teaches
 inline character/syllable anchoring with authored synthetic examples, including
 changes inside a word. It asks the model to separate source columns, preserve
 chord/lyric row association, avoid spacing-based guesses with proportional fonts,

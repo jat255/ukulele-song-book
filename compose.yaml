@@ -6,6 +6,11 @@ services:
       - "127.0.0.1:8000:8080"
     volumes:
       - songbook-data:/data
+      - codex-data:/codex
+    environment:
+      SONGBOOK_CODEX_HOME: /codex
+    networks:
+      - songbook-api
     cpus: 2.0
     mem_limit: 2g
     pids_limit: 256
@@ -22,9 +27,21 @@ services:
     command: ["songbook", "worker"]
     volumes:
       - songbook-data:/data
+      - codex-data:/codex
+    environment:
+      SONGBOOK_CODEX_HOME: /codex
+    networks:
+      - songbook-worker
+    # Codex creates its own restricted sandbox using Linux user namespaces.
+    security_opt:
+      - seccomp=unconfined
     cpus: 2.0
     mem_limit: 2g
     pids_limit: 256
     restart: unless-stopped
 volumes:
   songbook-data:
+  codex-data:
+networks:
+  songbook-api:
+  songbook-worker:

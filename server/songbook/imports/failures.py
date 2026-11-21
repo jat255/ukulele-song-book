@@ -1,6 +1,27 @@
 """Whitelisted failure feedback; never serialize provider text or exception messages."""
 
 DETAILS = {
+    "codex_empty_draft": (
+        "Codex returned an empty draft.",
+        "Open the Codex conversation and logs to see the model's explanation.",
+        False,
+    ),
+    "codex_turn_failed": ("The Codex turn failed before completing.", "Open the Codex conversation and logs for details, then retry if appropriate.", True),
+    "codex_auth": (
+        "Codex is not signed in or the account cannot be used.",
+        "Sign in to Codex in Settings and start over.",
+        False,
+    ),
+    "codex_rate_limit": (
+        "The Codex usage limit was reached.",
+        "Check Codex usage in Settings and retry when capacity is available.",
+        True,
+    ),
+    "codex_network": (
+        "Codex could not connect to its service.",
+        "Check the network connection and retry.",
+        True,
+    ),
     "provider_auth": (
         "AI service rejected the API credentials.",
         "Check the saved API key and account access in Settings, then start over.",

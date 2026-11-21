@@ -72,6 +72,33 @@ with Path("/private/tmp/songbook-auth-e2e-book.pdf").open("wb") as output:
     writer.write(output)
 
 
+# A portable synthetic batch for browser review tests.
+import hashlib
+import zipfile
+from uuid import uuid4
+
+from server.songbook.bulk.manifest import BatchEntry, BatchManifest
+
+pdf_data = Path("/private/tmp/songbook-auth-e2e-book.pdf").read_bytes()
+draft_data = b"{title: Batch Test}\n[C]Hello"
+entry = BatchEntry(
+    entry_id=uuid4(),
+    source_name="batch.pdf",
+    source_sha256=hashlib.sha256(pdf_data).hexdigest(),
+    original_path="originals/test.pdf",
+    page_count=2,
+    decision="include",
+    state="completed",
+    draft_path="drafts/test.cho",
+    draft_sha256=hashlib.sha256(draft_data).hexdigest(),
+)
+manifest = BatchManifest(batch_id=uuid4(), entries=[entry])
+with zipfile.ZipFile("/private/tmp/songbook-e2e-batch.zip", "w") as archive:
+    archive.writestr("manifest.json", manifest.model_dump_json())
+    archive.writestr(entry.original_path, pdf_data)
+    archive.writestr(entry.draft_path, draft_data)
+
+
 def work():
     while True:
         if not run_once(

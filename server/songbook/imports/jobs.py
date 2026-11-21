@@ -33,6 +33,37 @@ class ImportJobs:
                     Path(__file__).parents[1] / "storage/migrations/003_imports.sql"
                 ).read_text()
             )
+            db.executescript(
+                (
+                    Path(__file__).parents[1]
+                    / "storage/migrations/011_codex_activity.sql"
+                ).read_text()
+            )
+
+    def append_activity(self, job_id: str, worker_id: str, text: str) -> None:
+        with connect(self.store.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if not db.execute(
+                "SELECT 1 FROM import_jobs WHERE id=? AND worker_id=? AND state='processing'",
+                (job_id, worker_id),
+            ).fetchone():
+                return
+            db.execute(
+                "INSERT INTO codex_job_activity(job_id,text) VALUES (?,substr(?,-1000000)) ON CONFLICT(job_id) DO UPDATE SET text=substr(text || excluded.text,-1000000)",
+                (job_id, text),
+            )
+
+    def get_activity(self, job_id: str) -> dict:
+        with connect(self.store.database) as db:
+            if not db.execute(
+                "SELECT 1 FROM import_jobs WHERE id=?", (job_id,)
+            ).fetchone():
+                raise KeyError(job_id)
+            row = db.execute(
+                "SELECT text FROM codex_job_activity WHERE job_id=?", (job_id,)
+            ).fetchone()
+            text = row["text"] if row else ""
+            return {"text": text, "truncated": len(text) >= 1_000_000}
 
     def enqueue_import(
         self, source_id: str, selection: list[dict], method: str, idempotency_key: str
@@ -214,6 +245,11 @@ class ImportJobs:
                 details(result["error_code"]) if result["error_code"] else None
             )
             result["selection"] = json.loads(result.pop("selection_json"))
+            activity = db.execute(
+                "SELECT 1 FROM codex_job_activity WHERE job_id=?",
+                (ident,),
+            ).fetchone()
+            result["activity_available"] = activity is not None
             result["drafts"] = []
             for raw in db.execute(
                 "SELECT * FROM import_drafts WHERE job_id=? ORDER BY ordinal", (ident,)

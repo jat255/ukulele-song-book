@@ -12,14 +12,11 @@ uv sync
 npm ci
 npm run build
 export SONGBOOK_LIBRARY_ROOT="$PWD/songbook-data"
-uv run songbook auth set-password
 uv run songbook serve --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000`. The password is prompted without echo and only its
-Argon2 hash is stored. Replacing it revokes existing sessions. Keep the managed
-library directory private and outside version control; it contains originals,
-arrangements, and authentication data. For frontend development start `npm run
+Open `http://127.0.0.1:8000`. The local app opens without a password. Keep it bound to loopback and keep the managed
+library directory private and outside version control; it contains originals and arrangements. For frontend development start `npm run
 dev` separately and open the displayed loopback URL; Vite proxies the API to
 port 8000. The development server is intended for the local machine only.
 

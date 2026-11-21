@@ -24,6 +24,7 @@ from .api.auth import (
     require_origin,
     require_session,
 )
+from .api.codex import router as codex_router
 from .api.downloads import initialize as initialize_downloads
 from .api.downloads import router as downloads_router
 from .api.exports import ExportJobs
@@ -45,6 +46,7 @@ from .api.schemas import (
 from .api.setlists import router as setlists_router
 from .api.sync import router as sync_router
 from .config import Settings
+from .imports.codex_service import CodexService, codex_home_for
 from .imports.jobs import ImportJobs
 from .imports.pdf_extract import render_page
 from .pdf.jobs import PdfJobs
@@ -66,6 +68,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.store = store
     app.state.auth = AuthService(store.database, settings.session_seconds)
     app.state.imports = ImportJobs(store)
+    app.state.codex = CodexService(codex_home_for(settings.library_root))
     app.state.library = LibraryIndex(store)
     app.state.setlists = SetlistStore(store)
     app.state.pdf_jobs = PdfJobs(store)
@@ -73,6 +76,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.pdf_lock = _pdf_lock
     initialize_preferences(store.database)
     initialize_downloads(store)
+    app.include_router(codex_router)
     app.include_router(provider_router)
     app.include_router(downloads_router)
     app.include_router(exports_router)
@@ -198,8 +202,22 @@ def create_app(settings: Settings) -> FastAPI:
         return {"csrf": csrf}
 
     @app.get("/api/session", response_model=SessionResponse)
-    def session(principal: Principal = _session_dependency):
-        return {"csrf": principal.csrf}
+    def session(request: Request, response: Response):
+        try:
+            principal = app.state.auth.principal(request.cookies.get(COOKIE))
+            return {"csrf": principal.csrf}
+        except HTTPException:
+            token, csrf = app.state.auth.local_session()
+            response.set_cookie(
+                COOKIE,
+                token,
+                httponly=True,
+                secure=not settings.loopback_http,
+                samesite="strict",
+                max_age=settings.session_seconds,
+                path="/",
+            )
+            return {"csrf": csrf}
 
     @app.delete("/api/session", status_code=204)
     def logout(request: Request, principal: Principal = _session_dependency):

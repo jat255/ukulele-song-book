@@ -47,6 +47,7 @@ class PdfRenderRequest:
     performances: list[PerformanceSettings] = field(default_factory=list)
     settings: PrintSettings | None = None
     song_break: str = "new-page"
+    fit_lyric_lines: bool = False
 
 
 @dataclass(frozen=True)
