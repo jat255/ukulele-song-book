@@ -15,5 +15,5 @@ export function BatchImport({csrf,onImported}:{csrf:string;onImported:()=>void})
       onImported();
     } catch(error) {setMessage(error instanceof Error ? error.message : 'Could not import batch');} finally {setBusy(false);}
   }
-  return <form className="import-upload" onSubmit={event=>void upload(event)}><h3>Import converted batch</h3><label>Batch ZIP <input type="file" accept=".zip" onChange={event=>setFile(event.target.files?.[0] ?? null)}/></label><button disabled={!file || busy}>{busy?'Importing…':'Import converted batch'}</button>{message && <p role="status">{message}</p>}</form>;
+  return <form className="import-upload" onSubmit={event=>void upload(event)}><h3>Import converted batch</h3><label className="import-form-field">Batch ZIP <input type="file" accept=".zip" onChange={event=>setFile(event.target.files?.[0] ?? null)}/></label><button disabled={!file || busy}>{busy?'Importing…':'Import converted batch'}</button>{message && <p role="status">{message}</p>}</form>;
 }
