@@ -1,3 +1,5 @@
+> Historical reference: the alternate-provider settings UI has been removed. The Imports page uses Codex. Existing server-side provider configuration is retained for prior jobs.
+
 # AI conversion settings
 
 Open Settings → Configure AI conversion. The dialog manages one active service.

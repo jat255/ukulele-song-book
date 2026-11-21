@@ -46,12 +46,6 @@ and `uv run songbook worker` in separate terminals with the same
 `SONGBOOK_LIBRARY_ROOT`. `SONGBOOK_WORKER_REQUIRED=true` makes readiness depend
 on the worker heartbeat. See the README for test commands.
 
-AI services can also be configured from **Settings → Configure AI conversion**,
-including OpenAI-compatible image endpoints. Saved settings override the legacy
-Anthropic environment variables for both API and worker. Read [AI conversion](ai-conversion.md)
-for key storage, explicit page authorization, synthetic connection testing,
-endpoint/model compatibility and archive-restore requirements.
-
 ## Codex subscription and private network access
 
 In Settings, use **Sign in to Codex** and follow the device-code link. The sign-in is managed by Codex, and the selected account's image-capable models are available on Imports. The usage display shows Codex's primary and secondary rate-limit windows when the service provides them; unavailable data is not treated as zero. Choose the model and select Queue PDFs to send the selected files. Each included PDF must be one song and no more than five pages. Jobs run in the existing worker and every result remains a review draft. In the import queue, open **View Codex conversation and logs** to see the prompt, available reasoning summaries, response, lifecycle events, usage and redacted error details; the log can also be copied or downloaded. Logs can contain song content. They retain up to the latest 1,000,000 characters across attempts; the SDK runtime log contains at most its last 400 lines. Logs are excluded from library backups and exports. Per-draft token counts appear when Codex reports them.
