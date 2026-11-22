@@ -1,0 +1,9 @@
+# Local development override. Run with the same project name as compose.yaml.
+services:
+  api:
+    volumes:
+      - ./server:/app/server:ro
+    command: ["sh", "-c", "uvicorn server.songbook.dev:create_dev_app --factory --host 127.0.0.1 --port 8000 --reload --reload-dir /app/server & api=$$!; trap 'kill $$api 2>/dev/null' EXIT INT TERM; socat TCP-LISTEN:8080,reuseaddr,fork TCP:127.0.0.1:8000"]
+  worker:
+    volumes:
+      - ./server:/app/server:ro

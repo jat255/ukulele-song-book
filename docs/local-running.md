@@ -74,3 +74,26 @@ In Imports, use **Hide** to remove an item from the normal queue view without
 deleting its draft, original, logs, or accepted song. **Show hidden** reveals
 hidden items, and **Restore** returns an item to the normal view. Visibility is
 saved with the library and applies across browsers.
+
+## Development with live frontend reload
+
+Use the existing local image and data volumes with the development override:
+
+```sh
+docker compose -p tab-app-songbook -f compose.yaml -f compose.dev.yaml up -d
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173. Vite reloads frontend changes and proxies API
+requests to port 8000. Python changes under `server/` reload the API. The worker
+uses the same mounted source; after editing worker or conversion code, restart
+it when no import is running:
+
+```sh
+docker compose -p tab-app-songbook -f compose.yaml -f compose.dev.yaml restart worker
+```
+
+Changes to dependencies, the Dockerfile, or built music-package code still need
+an image rebuild (and `npm run build` for the music package). To return to the
+standard container setup, run `docker compose -p tab-app-songbook -f compose.yaml up -d`.
