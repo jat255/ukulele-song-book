@@ -313,3 +313,8 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
  .import-queue tbody td:last-child {margin-top:.8rem}
  .import-queue .quota-summary {max-width:none}
 }
+/* Queue actions share a single control treatment, including navigation links. */
+.import-queue tbody td:last-child {vertical-align:middle}
+.workspace .import-queue td:last-child > button,.workspace .import-queue td:last-child > a {display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:.45rem .75rem;margin:0 .4rem .4rem 0;border:1px solid #bdcbc0;border-radius:.45rem;background:#fff;color:#294d3d;font:500 .85rem/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap;vertical-align:middle}
+.workspace .import-queue td:last-child > button:hover,.workspace .import-queue td:last-child > a:hover {background:#eaf2ea;border-color:#8da995}
+.workspace .import-queue td:last-child > button:disabled {opacity:.5;cursor:default}
