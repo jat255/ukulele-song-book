@@ -282,3 +282,34 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .import-row--hidden {opacity:.7}
 .import-row--hidden .codex-activity {opacity:1}
 .import-queue-heading {flex-wrap:wrap}
+/* Imports workspace: consistent width and clearer task hierarchy. */
+.imports-page .import-upload {max-width:none;padding:1.5rem 1.75rem;box-shadow:0 3px 16px #263b2f05}
+.imports-page .import-upload > p {margin:.5rem 0 1.25rem;color:#61705f}
+.imports-page .pdf-dropzone {max-width:none;padding:1.25rem;gap:.3rem;border-style:dashed;background:#f1f6ee}
+.imports-page .pdf-dropzone--active {background:#e2efe2;border-color:#285b48}
+.imports-page .import-upload > button {background:#285b48;color:#fff;border-color:#285b48;font-weight:600;padding:.55rem 1rem}
+.imports-page .import-upload > button:disabled {opacity:.45;cursor:default}
+.imports-page .import-upload > .import-form-field {max-width:25rem}
+.import-queue-heading {margin-bottom:.6rem}
+.import-queue-heading h3 {margin:0}
+.import-queue-heading > span {background:#e9eee4;padding:.15rem .55rem;border-radius:999px}
+.import-queue tbody th {width:32%;font-size:.95rem;color:#35543f;line-height:1.5}
+.import-queue tbody td {vertical-align:top;padding-top:1rem;padding-bottom:1rem}
+.import-queue tbody td:last-child {width:18%;white-space:normal}
+.import-queue td:last-child > button,.import-queue td:last-child > a {display:inline-block;margin:0 .5rem .5rem 0}
+.import-queue tbody tr:hover {background:#f8faf5}
+.import-queue .codex-activity summary {font-size:.8rem;font-weight:500;padding:.3rem 0;color:#61705f}
+.import-queue .quota-summary {font-size:.82rem;line-height:1.6}
+.import-queue .quota-summary small {font-size:.75rem;line-height:1.4;max-width:24rem}
+@media(max-width:650px) {
+ .imports-page .import-upload {padding:1rem}
+ .import-queue table {display:block;min-width:0}
+ .import-queue thead {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .import-queue tbody {display:block}
+ .import-queue tbody tr {display:block;padding:1rem;border-bottom:1px solid #dfe6d9}
+ .import-queue tbody tr:last-child {border-bottom:0}
+ .import-queue tbody th,.import-queue tbody td,.import-queue tbody td:last-child {display:block;width:auto;padding:0;border:0}
+ .import-queue tbody th {margin-bottom:.65rem}
+ .import-queue tbody td:last-child {margin-top:.8rem}
+ .import-queue .quota-summary {max-width:none}
+}
