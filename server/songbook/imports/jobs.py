@@ -39,6 +39,28 @@ class ImportJobs:
                     / "storage/migrations/011_codex_activity.sql"
                 ).read_text()
             )
+            db.executescript(
+                (
+                    Path(__file__).parents[1]
+                    / "storage/migrations/012_hidden_imports.sql"
+                ).read_text()
+            )
+
+    def set_hidden(self, job_id: str, hidden: bool) -> None:
+        """Change queue visibility without altering the import or its draft."""
+        with connect(self.store.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if not db.execute(
+                "SELECT 1 FROM import_jobs WHERE id=?", (job_id,)
+            ).fetchone():
+                raise KeyError(job_id)
+            if hidden:
+                db.execute(
+                    "INSERT OR IGNORE INTO hidden_import_jobs(job_id) VALUES (?)",
+                    (job_id,),
+                )
+            else:
+                db.execute("DELETE FROM hidden_import_jobs WHERE job_id=?", (job_id,))
 
     def append_activity(self, job_id: str, worker_id: str, text: str) -> None:
         with connect(self.store.database) as db:
@@ -241,6 +263,11 @@ class ImportJobs:
             if row is None:
                 raise KeyError(ident)
             result = dict(row)
+            result["hidden"] = bool(
+                db.execute(
+                    "SELECT 1 FROM hidden_import_jobs WHERE job_id=?", (ident,)
+                ).fetchone()
+            )
             result["error_details"] = (
                 details(result["error_code"]) if result["error_code"] else None
             )

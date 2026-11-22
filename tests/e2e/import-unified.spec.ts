@@ -77,3 +77,36 @@ test('reports quota change next to a completed conversion', async ({page}) => {
   await expect(row.getByText('Weekly: comparison unavailable')).toBeVisible();
   await expect(row.getByText(/Shared account activity/)).toBeVisible();
 });
+
+test('hides and restores a queue item without deleting it', async ({page}) => {
+  let hidden=false;
+  await page.route('**/api/imports/job/visibility', async route => {
+    hidden=route.request().postDataJSON().hidden;
+    await route.fulfill({json:{hidden}});
+  });
+  await page.route('**/api/imports', route => route.fulfill({json:[{id:'job',source_id:'source',state:'accepted',method:'ai',error_code:null,selection:[{pages:[1],provider:'codex'}],hidden,drafts:[{id:'draft',ordinal:0,source:'{title: Hidden test}',revision:'rev',diagnostics:[],uncertainties:[],pages:[],accepted_id:'song'}]}]}));
+  await page.goto('/imports');
+  const row=page.getByRole('row').filter({hasText:'Hidden test'});
+  await expect(row).toBeVisible();
+  await row.getByRole('button',{name:'Hide'}).click();
+  await expect(row).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('button',{name:'Show hidden (1)'})).toBeVisible();
+  await page.getByRole('button',{name:'Show hidden (1)'}).click();
+  await expect(row).toBeVisible();
+  await row.getByRole('button',{name:'Restore'}).click();
+  await expect(row).toBeVisible();
+  await page.reload();
+  await expect(row).toBeVisible();
+});
+
+test('a hidden draft does not reopen automatically', async ({page}) => {
+  await page.route('**/api/imports', route => route.fulfill({json:[{id:'hidden-job',source_id:'source',state:'needs-review',method:'ai',error_code:null,selection:[{pages:[],provider:'codex'}],hidden:true,drafts:[{id:'draft',ordinal:0,source:'{title: Hidden draft}',revision:'rev',diagnostics:[],uncertainties:[],pages:[],accepted_id:null}]}]}));
+  await page.goto('/imports');
+  await expect(page.getByRole('button',{name:'Show hidden (1)'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Review draft'})).toHaveCount(0);
+  await page.getByRole('button',{name:'Show hidden (1)'}).click();
+  await expect(page.getByRole('heading',{name:'Review draft'})).toHaveCount(0);
+  await page.getByRole('button',{name:'Review',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Review draft'})).toBeVisible();
+});

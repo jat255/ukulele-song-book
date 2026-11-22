@@ -69,3 +69,8 @@ for completed drafts; failed attempts include it in their Codex activity log.
 These are estimates, not measured costs: other activity on the account and
 reporting delays or rounding can affect the change. A window that resets or
 cannot be read is reported as unavailable. Earlier drafts have no comparison.
+
+In Imports, use **Hide** to remove an item from the normal queue view without
+deleting its draft, original, logs, or accepted song. **Show hidden** reveals
+hidden items, and **Restore** returns an item to the normal view. Visibility is
+saved with the library and applies across browsers.

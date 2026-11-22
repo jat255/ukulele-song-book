@@ -183,7 +183,10 @@ def get_job(job_id: str, request: Request, principal: Principal = principal_depe
 
 @router.get("/{job_id}/activity")
 def get_activity(
-    job_id: str, request: Request, response: Response, principal: Principal = principal_dependency
+    job_id: str,
+    request: Request,
+    response: Response,
+    principal: Principal = principal_dependency,
 ):
     try:
         response.headers["Cache-Control"] = "no-store"
@@ -195,6 +198,25 @@ def get_activity(
 class DiscardRequest(BaseModel):
     state: str = Field(max_length=30)
     drafts: dict[str, str] = Field(max_length=20)
+
+
+class VisibilityRequest(BaseModel):
+    hidden: bool
+
+
+@router.put("/{job_id}/visibility")
+def set_visibility(
+    job_id: str,
+    body: VisibilityRequest,
+    request: Request,
+    principal: Principal = principal_dependency,
+):
+    require_csrf(request, principal)
+    try:
+        request.app.state.imports.set_hidden(job_id, body.hidden)
+    except KeyError:
+        raise HTTPException(404, detail="Import not found") from None
+    return {"hidden": body.hidden}
 
 
 @router.delete("/{job_id}", status_code=204)

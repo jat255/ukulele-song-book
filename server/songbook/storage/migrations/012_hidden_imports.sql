@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS hidden_import_jobs (job_id TEXT PRIMARY KEY REFERENCES import_jobs(id) ON DELETE CASCADE);
+INSERT OR IGNORE INTO schema_migrations VALUES (12);

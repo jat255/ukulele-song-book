@@ -277,3 +277,8 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 
 .quota-summary {margin-top:.55rem;max-width:25rem;color:#52674d;font-size:.8rem;line-height:1.45;white-space:normal}
 .quota-summary small {display:block;margin-top:.35rem;color:#697763}
+
+.workspace .import-hidden-toggle {margin-left:auto;background:transparent;border-color:transparent;font-size:.85rem;white-space:nowrap}
+.import-row--hidden {opacity:.7}
+.import-row--hidden .codex-activity {opacity:1}
+.import-queue-heading {flex-wrap:wrap}
