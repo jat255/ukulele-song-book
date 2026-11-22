@@ -80,18 +80,18 @@ saved with the library and applies across browsers.
 Use the existing local image and data volumes with the development override:
 
 ```sh
-docker compose -p tab-app-songbook -f compose.yaml -f compose.dev.yaml up -d
-npm ci
-npm run dev
+./scripts/dev.sh
 ```
 
+The script installs Node dependencies if needed and starts Vite in the foreground.
+Press Ctrl+C to stop Vite; the API and worker keep running.
 Open http://127.0.0.1:5173. Vite reloads frontend changes and proxies API
 requests to port 8000. Python changes under `server/` reload the API. The worker
 uses the same mounted source; after editing worker or conversion code, restart
 it when no import is running:
 
 ```sh
-docker compose -p tab-app-songbook -f compose.yaml -f compose.dev.yaml restart worker
+./scripts/dev.sh restart-worker
 ```
 
 Changes to dependencies, the Dockerfile, or built music-package code still need
