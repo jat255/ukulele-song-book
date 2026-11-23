@@ -79,17 +79,3 @@ npm exec playwright test
 Install Playwright's Chromium before running browser tests. Those tests start
 disposable local services with synthetic data. Use `npm run generate:api` to
 regenerate the API contract.
-
-## Chord grids
-
-For instrumental passages, ChordPro grids preserve bar and beat positions:
-
-```chordpro
-{start_of_grid: Intro}
-| C . Gm7 . | F . C . | . . G . | Bb . . . |
-{end_of_grid}
-```
-
-Each `.` is an empty beat position. Grid chords follow the player's transpose
-setting and are included in chord diagrams. Tab blocks remain literal and are
-not transposed. Grids describe chord changes; they do not produce audio timing.
