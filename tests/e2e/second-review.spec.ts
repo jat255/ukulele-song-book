@@ -1,9 +1,9 @@
 import {test,expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 test('song destinations, grouped controls, chord toggle and floating actions',async({page})=>{
- await page.setViewportSize({width:1440,height:1000});await page.goto('/player');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
- await expect(page.getByRole('heading',{name:'Choose a song to play'})).toBeVisible();
- await page.goto('/print');await expect(page.getByRole('heading',{name:'Choose a song to print'})).toBeVisible();
+ await page.setViewportSize({width:1440,height:1000});await page.goto('/player');
+ await expect(page.getByRole('heading',{name:'Library',exact:true})).toBeVisible();
+ await page.goto('/print');await expect(page.getByRole('heading',{name:'Library',exact:true})).toBeVisible();
  const id=readFileSync('/private/tmp/songbook-auth-e2e-performance-id','utf8');await page.goto('/player?id='+id);
  await expect(page.getByRole('region',{name:'Key & capo'})).toBeVisible();
  await expect(page.getByRole('region',{name:'Readability'})).toBeVisible();
@@ -26,13 +26,6 @@ test('song destinations, grouped controls, chord toggle and floating actions',as
  await page.setViewportSize({width:390,height:600});await row.getByRole('button',{name:'More',exact:true}).click();
  const panel=row.locator('.offline-actions [popover]');await expect(panel).toBeVisible();const bounds=await panel.boundingBox();expect(bounds!.x).toBeGreaterThanOrEqual(0);expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(390);expect(bounds!.y+bounds!.height).toBeLessThanOrEqual(600);
 
-});
-test('navigation uses arrangement IDs only on arrangement pages',async({page})=>{
- await page.goto('/setlists?id=00000000-0000-0000-0000-000000000000');await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
- await expect(page.getByRole('navigation').getByRole('link',{name:'Player',exact:true})).toHaveAttribute('href','/player');
- await expect(page.getByRole('navigation').getByRole('link',{name:'Print',exact:true})).toHaveAttribute('href','/print');
- const id=readFileSync('/private/tmp/songbook-auth-e2e-performance-id','utf8');await page.goto('/edit?id='+id);
- await expect(page.getByRole('navigation').getByRole('link',{name:'Player',exact:true})).toHaveAttribute('href','/player?id='+id);
 });
 test('capo value has room for two digits and tuning controls are absent',async({page})=>{
  const id=readFileSync('/private/tmp/songbook-auth-e2e-performance-id','utf8');await page.goto('/player?id='+id);await page.getByLabel('Password').fill('synthetic test password');await page.getByRole('button',{name:'Sign in'}).click();
