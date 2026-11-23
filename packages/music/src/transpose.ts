@@ -14,6 +14,10 @@ function shift(note:string, amount:number, flats:boolean):string {
   const pitch=pitches[note]; return (flats ? flat : sharp)[((pitch + amount) % 12 + 12) % 12];
 }
 export function transposeChord(token:string, semitones:number, spelling:Spelling, key?:string):{token:string;diagnostic?:Diagnostic} {
+  if (token.startsWith('(') && token.endsWith(')')) {
+    const result=transposeChord(token.slice(1,-1),semitones,spelling,key);
+    return result.diagnostic ? {token,diagnostic:warning('unknown-chord',`Cannot transpose chord: ${token}`)} : {token:`(${result.token})`};
+  }
   if (/^(?:N\.?C\.?|x)$/i.test(token)) return {token};
   const match=token.match(/^([A-G](?:#|b)?)([^/]*)(?:\/([A-G](?:#|b)?))?$/);
   if (!match || pitches[match[1]] === undefined || (match[3] && pitches[match[3]] === undefined) || !/^(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|°|ø)|[0-9+#b()\-])*$/.test(match[2]) || !Number.isInteger(semitones)) return {token,diagnostic:warning('unknown-chord',`Cannot transpose chord: ${token}`)};
@@ -34,6 +38,21 @@ export function derivePerformance(document:MusicDocument, settings:PerformanceSe
     if (display.diagnostic || sounding.diagnostic) {diagnostics.push(warning('unknown-key','Key could not be resolved')); scopes.push({sourceKey:key,displayKey:null,soundingKey:null});}
     else scopes.push({sourceKey:key,displayKey:display.token,soundingKey:sounding.token});
   }
+  function transposeGrid(text:string):string {
+    return text.replace(/[^\r\n]+/g, line => {
+      const first=line.indexOf('|'), last=line.lastIndexOf('|');
+      if(first<0 || last<=first) return line;
+      const middle=line.slice(first,last+1).replace(/[^\s|:]+/g, token => {
+        if (/^(?:\.|\/|%+|\d+>?)$/.test(token)) return token;
+        return token.split('~').map(chord => {
+          const result=transposeChord(chord,sourceOffset+settings.semitones,currentSpelling(),key);
+          if (result.diagnostic) diagnostics.push(result.diagnostic);
+          return result.token;
+        }).join('~');
+      });
+      return line.slice(0,first)+middle+line.slice(last+1);
+    });
+  }
   const blocks=document.blocks.map(block => {
     if (block.kind==='directive' && block.name==='key') {
       key=block.value;
@@ -52,6 +71,7 @@ export function derivePerformance(document:MusicDocument, settings:PerformanceSe
       return {...block};
     }
     if (block.kind==='tab' && (sourceOffset+settings.semitones)!==0) diagnostics.push(warning('tab-not-transposed','Tab remains in its original tuning and pitch'));
+    if (block.kind==='grid') return {...block,text:transposeGrid(block.text)};
     if (block.kind!=='lyric') return {...block};
     return {...block,segments:block.segments.map(segment => {
       if (!segment.chord) return {...segment};
@@ -70,6 +90,7 @@ export function serializePerformanceArrangement(document:MusicDocument, settings
   const edits:{span:{start:number;end:number};text:string}[]=[];
   for (let i=0;i<document.blocks.length;i++) {
     const original=document.blocks[i], transformed=derived.blocks[i];
+    if (original.kind==='grid' && transformed.kind==='grid') edits.push({span:original.contentSpan,text:transformed.text});
     if (original.kind==='lyric' && transformed.kind==='lyric') original.segments.forEach((segment,index) => {
       if (segment.chord) edits.push({span:{start:segment.span.start,end:segment.span.start+segment.chord.length+2},text:`[${transformed.segments[index].chord}]`});
     });

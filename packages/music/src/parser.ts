@@ -17,6 +17,7 @@ export function parseSource(source: string): MusicDocument {
   const doc: MusicDocument = {schemaVersion:1,source,metadata:{},blocks:[],definitions:[],diagnostics:[]};
   const lines = [...source.matchAll(/[^\r\n]*(?:\r\n|\r|\n|$)/g)].filter(m => m[0].length);
   let tab: {start:number; contentStart:number; label?:string}|undefined;
+  let grid: {start:number; contentStart:number; label?:string}|undefined;
   const sections: string[] = [];
   let unsupportedEnv: {name:string;start:number}|undefined;
   for (let i=0;i<lines.length;i++) {
@@ -28,15 +29,20 @@ export function parseSource(source: string): MusicDocument {
       if (name==='end_of_tab') { doc.blocks.push({kind:'tab',text:source.slice(tab.contentStart,start),groups:tabGroups(source.slice(tab.contentStart,start)),label:tab.label,span:{start:tab.start,end}}); tab=undefined; }
       continue;
     }
+    if (grid) {
+      if (name==='end_of_grid') { doc.blocks.push({kind:'grid',text:source.slice(grid.contentStart,start),contentSpan:{start:grid.contentStart,end:start},label:grid.label,span:{start:grid.start,end}}); grid=undefined; }
+      continue;
+    }
     if (unsupportedEnv) {
       if (name===`end_of_${unsupportedEnv.name}`) {doc.blocks.push({kind:'unsupported',text:source.slice(unsupportedEnv.start,end),span:{start:unsupportedEnv.start,end}}); unsupportedEnv=undefined;}
       continue;
     }
-    if (name==='start_of_grid' || name==='start_of_abc' || name==='start_of_ly') {
+    if (name==='start_of_abc' || name==='start_of_ly') {
       unsupportedEnv={name:name.slice(9),start}; doc.diagnostics.push({code:'unsupported-environment',severity:'warning',message:`Unsupported environment: ${name}`,line:i+1}); continue;
     }
     if (!match && content.trimStart().startsWith('{')) { doc.blocks.push({kind:'unsupported',text:content,span:{start,end}}); doc.diagnostics.push({code:'malformed-directive',severity:'warning',message:'Malformed directive',line:i+1}); continue; }
     if (name==='start_of_tab') { tab={start,contentStart:end,label:value || undefined}; continue; }
+    if (name==='start_of_grid') { grid={start,contentStart:end,label:value || undefined}; continue; }
     if (name.startsWith('start_of_') || name.startsWith('end_of_')) {
       const action=name.startsWith('start_of_') ? 'start' : 'end'; const section=name.slice(action==='start'?9:7);
       if (action==='start') sections.push(section); else if (sections.pop()!==section) doc.diagnostics.push({code:'unmatched-section',severity:'warning',message:'Unmatched section boundary',line:i+1});
@@ -59,6 +65,7 @@ export function parseSource(source: string): MusicDocument {
   }
   if (unsupportedEnv) doc.blocks.push({kind:'unsupported',text:source.slice(unsupportedEnv.start),span:{start:unsupportedEnv.start,end:source.length}});
   if (tab) {doc.blocks.push({kind:'tab',text:source.slice(tab.contentStart),groups:tabGroups(source.slice(tab.contentStart)),label:tab.label,span:{start:tab.start,end:source.length}}); doc.diagnostics.push({code:'unmatched-tab',severity:'warning',message:'Unclosed tab section'});}
+  if (grid) {doc.blocks.push({kind:'grid',text:source.slice(grid.contentStart),contentSpan:{start:grid.contentStart,end:source.length},label:grid.label,span:{start:grid.start,end:source.length}}); doc.diagnostics.push({code:'unmatched-grid',severity:'warning',message:'Unclosed grid section'});}
   if (sections.length) doc.diagnostics.push({code:'unmatched-section',severity:'warning',message:'Unclosed section'});
   return doc;
 }

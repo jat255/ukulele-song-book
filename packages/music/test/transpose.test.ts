@@ -3,6 +3,12 @@ import {parseSource} from '../src/parser.js';
 import {derivePerformance,serializePerformanceArrangement,transposeChord} from '../src/transpose.js';
 
 describe('performance transposition', () => {
+  it('transposes grid chords and saves them while retaining bar and repeat symbols', () => {
+    const source='{start_of_grid}\n| C . G/B . | F~Am . % . |\n{end_of_grid}\n';
+    const doc=parseSource(source), settings={semitones:2,spelling:'sharps' as const,capo:0,tuning:'high-g' as const};
+    expect(derivePerformance(doc,settings).blocks[0]).toMatchObject({kind:'grid',text:'| D . A/C# . | G~Bm . % . |\n'});
+    expect(serializePerformanceArrangement(doc,settings).source).toBe('{start_of_grid}\n| D . A/C# . | G~Bm . % . |\n{end_of_grid}\n');
+  });
   it('transposes roots and slash bass while preserving quality', () => {
     expect(transposeChord('D/F#',2,'sharps').token).toBe('E/G#');
     expect(transposeChord('Bbmaj7/D',2,'flats').token).toBe('Cmaj7/E');
@@ -57,4 +63,12 @@ describe('saving performance variants', () => {
     expect(result.source).toBe(source);
     expect(result.diagnostics.some(item=>item.code==='unsafe-serialization')).toBe(true);
   });
+});
+
+it('transposes optional parenthesized chords and preserves parentheses', () => {
+  expect(transposeChord('(F#)', 2, 'sharps')).toEqual({token:'(G#)'});
+  expect(transposeChord('(D/F#)', 2, 'sharps')).toEqual({token:'(E/G#)'});
+  const result=serializePerformanceArrangement(parseSource('a[(F#)]word'),{semitones:2,spelling:'sharps',capo:0,tuning:'high-g'});
+  expect(result.source).toBe('a[(G#)]word');
+  expect(transposeChord('(bogus)', 2, 'sharps').diagnostic?.code).toBe('unknown-chord');
 });

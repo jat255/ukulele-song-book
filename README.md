@@ -42,3 +42,15 @@ Settings, choose the files and a model, then select Queue PDFs. Each PDF must
 contain one song and at most five pages. Queuing sends the files to Codex using
 your subscription. Review each draft against its retained original before
 accepting it into the library.
+
+For instrumental passages, ChordPro grids preserve bar and beat positions:
+
+```chordpro
+{start_of_grid: Intro}
+| C . Gm7 . | F . C . | . . G . | Bb . . . |
+{end_of_grid}
+```
+
+Each `.` is an empty beat position. Grid chords follow the player's transpose
+setting and are included in chord diagrams. Tab blocks remain literal and are
+not transposed. Grids describe chord changes; they do not produce audio timing.
