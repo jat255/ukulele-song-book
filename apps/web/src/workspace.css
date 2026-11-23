@@ -149,7 +149,9 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .import-review-grid--text {grid-template-columns:minmax(0,1fr)}
 .import-originals {min-width:0;max-height:80vh;overflow:auto;background:#e3e7dd;border-radius:8px;padding:.75rem}
 .import-originals img {display:block;width:100%;height:auto;margin-bottom:1rem;box-shadow:0 2px 8px #24382b20}
-.import-workbench {min-width:0}
+.import-workbench {display:contents}
+.import-workbench > .chord-editor {min-width:0}
+.import-workbench > :not(.chord-editor) {grid-column:1 / -1;min-width:0}
 .import-workbench textarea {font:14px/1.6 monospace;min-height:22rem;resize:vertical}
 .import-review-actions {display:flex;flex-wrap:wrap;gap:.65rem;margin:1rem 0}
 .import-warnings {padding:1rem;background:#fff3dd;border:1px solid #ecdfbf;border-radius:8px;font-size:.85rem;margin:1rem 0;overflow-wrap:anywhere}
@@ -201,13 +203,15 @@ body:has(.workspace) {margin:0;background:#f6f5ef}
 .chord-editor-toolbar input {width:9rem}
 .chord-editor-instruction {margin:.7rem 0;color:#285b48;font-size:.9rem}
 .chord-editor-error {color:#883f28}
-.chord-editor-sheet {margin-top:.8rem;padding:.5rem .75rem;background:white;border:1px solid #e2e8df;border-radius:.5rem;overflow-x:auto}
+.chord-editor-sheet {max-height:calc(100dvh - 19rem);min-height:12rem;margin-top:.8rem;padding:.5rem .75rem;background:white;border:1px solid #e2e8df;border-radius:.5rem;overflow:auto;overscroll-behavior:contain}
 .chord-editor-line {min-width:max-content}
 .chord-editor-line > p {color:#667566;font-size:.85rem}
 .chord-editor-blank {height:.8rem}
 .chord-editor-lyrics {display:flex;align-items:end;white-space:pre;font-family:ui-monospace,monospace;line-height:1.4}
-.chord-editor-cell {display:inline-flex;flex-direction:column;align-items:stretch;min-width:0}
-.chord-editor-chords {display:flex;align-items:end;height:2rem;gap:.1rem}
+.chord-editor-cell {position:relative;display:inline-flex;flex-direction:column;align-items:stretch;min-width:0;padding-top:2rem}
+.chord-editor-chords {position:absolute;z-index:1;bottom:1.7rem;left:calc(-.25rem - 1px);display:flex;align-items:end;height:2rem;gap:.1rem}
+.chord-editor-lyrics--chords-only .chord-editor-cell {flex-direction:row;align-items:end;padding-top:0}
+.chord-editor-lyrics--chords-only .chord-editor-chords {position:static}
 .workspace .chord-editor-chords button {padding:.1rem .25rem;border-color:transparent;background:transparent;color:#285b48;font-weight:700;font-family:inherit;line-height:1.3}
 .workspace .chord-editor-chords button:hover {background:#eaf2ea}
 .workspace .chord-editor-chords button[aria-pressed="true"] {background:#285b48;color:white}

@@ -33,10 +33,11 @@ binds to the local machine; keep the library and its originals private. See
 The [deployment readiness](docs/deployment-readiness.md) notes describe the
 remaining work needed for other deployment environments.
 
-## Import PDF songs
+## Import songs
 
-In Settings, sign in to Codex. In Imports, choose PDFs and a model, then select
-**Queue PDFs**. Each PDF must contain one song and no more than five pages.
+In Imports, choose `.cho` or `.chordpro` files to import them directly.
+To convert PDFs, sign in to Codex in Settings, choose PDFs and a model in
+Imports, then select **Queue files**. Each PDF must contain one song and no more than five pages.
 Queuing sends the files to Codex using your subscription. PDF conversion is
 experimental: review each draft against the retained original before accepting
 it into the library. Live vision conversion fidelity has not been verified.
@@ -50,7 +51,7 @@ Then install dependencies and start the application:
 uv sync
 npm ci
 npm run build
-export SONGBOOK_LIBRARY_ROOT="$PWD/songbook-data"
+export SONGBOOK_LIBRARY_ROOT="$HOME/songbook-data"
 uv run songbook serve --host 127.0.0.1 --port 8000
 ```
 
@@ -78,3 +79,17 @@ npm exec playwright test
 Install Playwright's Chromium before running browser tests. Those tests start
 disposable local services with synthetic data. Use `npm run generate:api` to
 regenerate the API contract.
+
+## Chord grids
+
+For instrumental passages, ChordPro grids preserve bar and beat positions:
+
+```chordpro
+{start_of_grid: Intro}
+| C . Gm7 . | F . C . | . . G . | Bb . . . |
+{end_of_grid}
+```
+
+Each `.` is an empty beat position. Grid chords follow the player's transpose
+setting and are included in chord diagrams. Tab blocks remain literal and are
+not transposed. Grids describe chord changes; they do not produce audio timing.

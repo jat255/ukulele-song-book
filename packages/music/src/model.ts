@@ -4,6 +4,7 @@ export type Segment = { chord?: string; lyric: string; span: SourceSpan };
 export type MusicBlock =
   | { kind: 'lyric'; segments: Segment[]; span: SourceSpan }
   | { kind: 'tab'; text: string; groups: {startLine: number; endLine: number}[]; label?: string; span: SourceSpan }
+  | { kind: 'grid'; text: string; contentSpan: SourceSpan; label?:string; span: SourceSpan }
   | { kind: 'section'; name: string; label?: string; action: 'start'|'end'; span: SourceSpan }
   | { kind: 'comment'; text: string; span: SourceSpan }
   | { kind: 'directive'; name: string; value: string; span: SourceSpan }

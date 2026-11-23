@@ -1,10 +1,21 @@
 import {resolveDiagram} from '../../../../packages/music/src/diagrams';
+import {transposeChord} from '../../../../packages/music/src/transpose';
 import {ChordHint} from '../features/player/ChordHint';
 import React from 'react';
 import type {MusicBlock,MusicDocument,PerformanceSettings} from '../../../../packages/music/src/model';
 import './music.css';
 
 function renderBlock(block:MusicBlock,mode:'play'|'print',document:MusicDocument,performance:PerformanceSettings):React.ReactNode {
+  if(block.kind==='grid') return <div className="chord-grid">{block.label && <div className="section-label">{block.label}</div>}{block.text.split(/\r\n|\r|\n/).filter(Boolean).map((line,i)=>{
+    const tokens=line.split(/(:\|:\d*>?|:\|\d*>?|\|\||\|(?::|\.|\d+>?)?|\s+)/).filter(token=>token && !/^\s+$/.test(token));
+    const first=tokens.findIndex(token=>token.includes('|')), last=tokens.reduce((index,token,i)=>token.includes('|') ? i : index,-1);
+    return <div className="chord-grid-line" key={i}>{tokens.map((token,j)=>{
+      if (token.includes('|')) return <span key={j} className="chord-grid-bar">{token}</span>;
+      const parts=token.split('~');
+      const chords=j>first && j<last && parts.every(part=>/^[A-G]/.test(part) && !transposeChord(part,0,'auto').diagnostic);
+      return <span key={j} className="chord-grid-cell">{chords ? parts.map((chord,k)=><React.Fragment key={k}>{k>0 && '~'}{mode==='play' ? <ChordHint chord={chord} diagram={resolveDiagram(chord,performance.tuning,document.definitions)}/> : <span className="chord">{chord}</span>}</React.Fragment>) : token}</span>;
+    })}</div>;
+  })}</div>;
   if(block.kind==='lyric') return <div className="lyric-line">{block.segments.map((segment,i)=>{
     if(!segment.chord) return <span className="lyric-fragment" key={i}>{segment.lyric}</span>;
     const match=segment.lyric.match(/^(\s*\S+)([\s\S]*)$/);

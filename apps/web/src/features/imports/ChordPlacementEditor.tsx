@@ -36,7 +36,11 @@ export function ChordPlacementEditor({source, onChange}: {source:string; onChang
     <div className="chord-editor-sheet">
       {lines.map((line,index)=><div className="chord-editor-line" key={`${line.span.start}-${index}`}>
         {!line.editable ? <p>{line.reason} {line.lyrics}</p> : !line.lyrics && !line.chords.length && !adding ? <div className="chord-editor-blank" aria-hidden="true" /> :
-          <div className="chord-editor-lyrics" aria-label={`Lyric line ${index+1}`}>
+          <div className={`chord-editor-lyrics${line.lyrics.trim() ? '' : ' chord-editor-lyrics--chords-only'}`} aria-label={`Lyric line ${index+1}`}>
+            {current?.line === index && !!line.lyrics.trim() && Array.from({length:4},(_,i)=>{
+              const spaces=(line.lyrics.match(/^[ \t]*/)?.[0].length ?? 0)+4-i;
+              return <button key={`before-${i}`} type="button" className="chord-position" aria-label={`Place chord ${spaces} ${spaces === 1 ? 'space' : 'spaces'} before lyrics`} title={`Place chord ${spaces} ${spaces === 1 ? 'space' : 'spaces'} before lyrics`} onClick={()=>act(()=>applyChordEdit(source,line.span,{kind:'move-before',id:current.chord,spaces}))}>{'\u00a0'}</button>;
+            })}
             {line.boundaries.map((position,i)=>{
               const atPosition = line.chords.filter(chord=>chord.offset===position);
               const canPlace = adding || current?.line === index;

@@ -5,6 +5,7 @@ import {parseSource} from '../../../../../packages/music/src/parser';
 import {blockId} from '../../music/MusicBlocks';
 import {derivePerformance,serializePerformanceArrangement} from '../../../../../packages/music/src/transpose';
 import {resolveDiagram} from '../../../../../packages/music/src/diagrams';
+import {gridChords} from '../../../../../packages/music/src/grid';
 import type {PerformanceSettings,PlaySettings} from '../../../../../packages/music/src/model';
 import {usePreferences} from '../settings/preferences';
 import {ColumnLayout} from './ColumnLayout';
@@ -90,7 +91,7 @@ export function Player({id,csrf,forceCached=false,selectionId}: {id:string;csrf:
   const changePlay=(part:Partial<PlaySettings>) => preferences.change('play',{...play,...part});
   const changePerformance=(part:Partial<PerformanceSettings>) => preferences.change('performance',{...performance,...part});
   const sections=doc.blocks.flatMap((block,index) => block.kind === 'section' && block.action === 'start' ? [{id:blockId(block,index),label:block.label || block.name}] : []);
-  const chords=[...new Set(doc.blocks.flatMap(block => block.kind === 'lyric' ? block.segments.flatMap(segment => segment.chord ? [segment.chord] : []) : []))];
+  const chords=[...new Set(doc.blocks.flatMap(block => block.kind === 'lyric' ? block.segments.flatMap(segment => segment.chord ? [segment.chord] : []) : block.kind==='grid' ? gridChords(block.text) : []))];
   async function saveVariant() {
     if (!csrf || !navigator.onLine) {setError('A connection is required to save a variant.');return;}
     if (!snapshot) return;

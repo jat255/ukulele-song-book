@@ -76,3 +76,5 @@ def test_prompt_distinguishes_timing_marks_from_lyrics_and_labels_sections():
     assert "{start_of_verse}" in prompt and "{end_of_verse}" in prompt
     assert "{start_of_chorus}" in prompt and "{end_of_chorus}" in prompt
     assert "uncertainties" in prompt
+    assert "{start_of_grid}" in prompt and "{end_of_grid}" in prompt
+    assert "Do not invent bars or beat positions" in prompt

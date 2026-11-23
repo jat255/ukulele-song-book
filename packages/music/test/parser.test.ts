@@ -55,10 +55,10 @@ it('retains four and six string custom definitions', () => {
 it('reports unvalidated chord definitions as preserved-only', () => {
   expect(parseSource('{define: C base-fret 1 frets 0 0 0 3}').diagnostics.map(d => d.code)).toContain('unvalidated-definition');
 });
-it('flags unsupported grid semantics without interpreting its contents as ordinary lyrics', () => {
+it('parses grids as musical blocks and retains their source', () => {
   const doc = parseSource('{start_of_grid}\n| C . G . |\n{end_of_grid}\n');
-  expect(doc.diagnostics.map(d=>d.code)).toContain('unsupported-environment');
-  expect(doc.blocks[0]).toMatchObject({kind:'unsupported'});
+  expect(doc.diagnostics).toEqual([]);
+  expect(doc.blocks[0]).toMatchObject({kind:'grid',text:'| C . G . |\n'});
 });
 it('keeps grid markers literal inside tablature', () => {
   expect(parseSource('{sot}\n{start_of_grid}\nA|---|\n{eot}').blocks[0]).toMatchObject({kind:'tab',text:'{start_of_grid}\nA|---|\n'});

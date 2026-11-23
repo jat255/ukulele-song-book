@@ -7,6 +7,10 @@
 .lyric-fragment {white-space:pre-wrap}
 .chord {font-weight:bold;font-family:NotoMono,monospace;line-height:1.1;color:#355670}
 .tab {font-family:NotoMono,monospace;white-space:pre;break-inside:avoid;margin:.5em 0;line-height:1.13}
+.chord-grid {font-family:NotoMono,monospace;overflow-x:auto;margin:.5em 0;break-inside:avoid}
+.chord-grid-line {display:flex;width:max-content;align-items:baseline;white-space:nowrap}
+.chord-grid-cell {min-width:3em;padding:0 .25em}
+.chord-grid-bar {padding:0 .15em}
 .section-label {font-weight:bold;margin:12px 0 2px;break-after:avoid}
 .comment,.unsupported {margin:.3em 0;break-inside:avoid}
 @media print {.section-label {margin-top:10px} body {margin:0} .music {font-size:var(--music-size,12pt)}}

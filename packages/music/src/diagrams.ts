@@ -5,9 +5,9 @@ const shapes:Record<string,number[]> = {C:[0,0,0,3],G:[0,2,3,2],F:[2,0,1,0],Am:[
 const generated=new Map<string,number[]>();
 const note:Record<string,number>={C:0,'B#':0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,Fb:4,F:5,'E#':5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11,Cb:11};
 function required(chord:string):{classes:Set<number>;bass:number|null}|null {
-  const match=chord.match(/^([A-G](?:#|b)?)(m|maj7|m7|7|dim|aug|sus2|sus4|6|m6)?(?:\/([A-G](?:#|b)?))?$/);
+  const match=chord.match(/^([A-G](?:#|b)?)(m|maj7|m7|7|dim|aug|sus2|sus4|6|m6|9|add9)?(?:\/([A-G](?:#|b)?))?$/);
   if (!match || note[match[1]] === undefined || (match[3] && note[match[3]] === undefined)) return null;
-  const extra:Record<string,number[]>={dim:[0,3,6],aug:[0,4,8],sus2:[0,2,7],sus4:[0,5,7],'6':[0,4,7,9],m6:[0,3,7,9]};
+  const extra:Record<string,number[]>={dim:[0,3,6],aug:[0,4,8],sus2:[0,2,7],sus4:[0,5,7],'6':[0,4,7,9],m6:[0,3,7,9],'9':[0,4,10,2],add9:[0,4,7,2]};
   const intervals=extra[match[2]] ?? (match[2] === 'm' ? [0,3,7] : match[2] === 'm7' ? [0,3,7,10] : match[2] === '7' ? [0,4,7,10] : match[2] === 'maj7' ? [0,4,7,11] : [0,4,7]);
   const classes=new Set(intervals.map(value => (note[match[1]]+value)%12));
   const bass=match[3] ? note[match[3]] : null;
@@ -15,6 +15,7 @@ function required(chord:string):{classes:Set<number>;bass:number|null}|null {
   return {classes,bass};
 }
 export function resolveDiagram(chord:string, tuning:'high-g'|'low-g', definitions:ChordDefinition[]):DiagramResult {
+  if (chord.startsWith('(') && chord.endsWith(')')) chord=chord.slice(1,-1);
   const expected=required(chord);
   if (!expected) return {status:'unknown',reason:'Chord quality or bass is not supported'};
   const definition=definitions.find(item => item.name === chord);

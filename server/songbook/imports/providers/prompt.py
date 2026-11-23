@@ -1,6 +1,6 @@
 """Shared vision transcription instructions; examples are authored synthetic text."""
 
-PROMPT_VERSION = "chord-placement-v4"
+PROMPT_VERSION = "chord-placement-v5"
 
 
 def transcription_prompt(page_numbers: list[int]) -> str:
@@ -48,12 +48,17 @@ syllables.
 
 If chords are printed as a standalone instrumental sequence or after the last
 lyric syllable, preserve them there, including consecutive changes without
-lyrics. Use a chord-only line for a genuinely independent instrumental row.
+lyrics. For lyricless instrumental passages with printed bar or beat spacing,
+use ChordPro grids: {{start_of_grid}}, then rows such as
+| C . Gm7 . | F . C . |, then {{end_of_grid}}. Preserve the printed chord
+order, repeats, bar boundaries and beat positions; use . for empty beats.
+Do not invent bars or beat positions when the page does not show them. Use a
+chord-only line for an instrumental row without clear measure spacing.
 Do not attach ukulele/guitar diagram captions or page-header key labels to
 lyrics. Preserve title/artist/key/capo only when printed; do not guess metadata.
 
 TIMING MARKS AND LYRIC TEXT:
-Omit standalone slashes, bar lines, and repeated dashes or dots used only as
+Outside grids, omit standalone slashes, bar lines, and repeated dashes or dots used only as
 beat, measure, strumming, or sustain guides. Remove extra hyphens or spaces
 inserted around an inline chord solely to split a word for timing; join the
 word while keeping the chord at the same syllable boundary. For example,
@@ -63,7 +68,7 @@ between them are removed. Keep genuine lyric punctuation and spelling, such as
 hyphens in compound words, apostrophes, and sung syllables. Preserve slash-bass
 chords such as [C/E] exactly. If unsure whether a mark is musical timing or
 literal lyric content, retain it and add a specific uncertainty for review.
-These cleanup rules do not apply inside literal tablature blocks.
+These cleanup rules do not apply inside grids or literal tablature blocks.
 
 SONG SECTIONS:
 Identify verses and choruses from printed labels and the song's repeated lyric
