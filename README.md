@@ -1,11 +1,50 @@
-# Private ukulele songbook
+# Ukulele Song Book
 
-The songbook provides a private managed library, reviewed imports, playing,
-setlists, printing, offline downloads, and local export and backup. See
-[local running](docs/local-running.md) for the container setup and
-[deployment readiness](docs/deployment-readiness.md) for remaining limits.
+Ukulele Song Book is a self-hosted library for keeping songs and chord charts
+in one place. Browse your collection, open a song to play, and prepare setlists
+or printable copies. The app stores its library locally and supports offline
+copies for playing away from a connection.
 
-For local development, install Python 3.12+, Node 22.12+, uv, and dependencies:
+## Features
+
+- Browse, search, sort, and filter songs by artist or tag. Mark favorites and
+  find recently played songs.
+- Play ChordPro arrangements with chord diagrams, transposition, capo settings,
+  adjustable text and columns, and automatic scrolling.
+- Organize songs into setlists and prepare songs or setlists for printing.
+- Import PDFs as reviewable drafts with Codex, and keep the original files
+  alongside accepted arrangements.
+- Download songs for offline use, export your library, and make backups.
+
+## Run locally with Docker
+
+Install Docker with Compose, then run:
+
+```sh
+docker compose build
+docker compose up -d
+docker compose ps
+```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The application opens
+without a password and is intended for one local operator. The Compose setup
+binds to the local machine; keep the library and its originals private. See
+[local running](docs/local-running.md) for storage, backups, and configuration.
+The [deployment readiness](docs/deployment-readiness.md) notes describe the
+remaining work needed for other deployment environments.
+
+## Import PDF songs
+
+In Settings, sign in to Codex. In Imports, choose PDFs and a model, then select
+**Queue PDFs**. Each PDF must contain one song and no more than five pages.
+Queuing sends the files to Codex using your subscription. PDF conversion is
+experimental: review each draft against the retained original before accepting
+it into the library. Live vision conversion fidelity has not been verified.
+
+## Develop locally
+
+Install Python 3.12 or later, Node 22.12 or later, and [uv](https://docs.astral.sh/uv/).
+Then install dependencies and start the application:
 
 ```sh
 uv sync
@@ -15,30 +54,27 @@ export SONGBOOK_LIBRARY_ROOT="$PWD/songbook-data"
 uv run songbook serve --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000`. The local app opens without a password. Keep it bound to loopback and keep the managed
-library directory private and outside version control; it contains originals and arrangements. For frontend development start `npm run
-dev` separately and open the displayed loopback URL; Vite proxies the API to
-port 8000. The development server is intended for the local machine only.
-
-Check the generated API contract with `npm run check:api`, or regenerate it
-with `npm run generate:api`. Run `uv run pytest`, `npm run typecheck`,
-`npm run build`, and `npm exec playwright test` for local checks after installing
-Playwright's Chromium. Browser tests start disposable synthetic services locally.
-
-PDF extraction is experimental and creates review-only drafts. The original
-source must be retained and conversion results require human review. Live vision
-conversion fidelity has not been verified. No external provider is contacted
-by these local commands.
-
-Run the durable import worker in a second terminal with the same
-`SONGBOOK_LIBRARY_ROOT`:
+Start the import worker in a second terminal with the same library root:
 
 ```sh
 uv run songbook worker
 ```
 
-The Imports page converts one or more PDFs with Codex. Sign in to Codex in
-Settings, choose the files and a model, then select Queue PDFs. Each PDF must
-contain one song and at most five pages. Queuing sends the files to Codex using
-your subscription. Review each draft against its retained original before
-accepting it into the library.
+For frontend development, run `npm run dev` separately and open the loopback URL
+it displays. Vite proxies API requests to port 8000. Keep the development
+server bound to the local machine and keep the library directory outside version
+control. It contains imported originals and arrangements.
+
+The project uses these local checks:
+
+```sh
+uv run pytest
+npm run typecheck
+npm run build
+npm run check:api
+npm exec playwright test
+```
+
+Install Playwright's Chromium before running browser tests. Those tests start
+disposable local services with synthetic data. Use `npm run generate:api` to
+regenerate the API contract.
