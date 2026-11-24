@@ -70,23 +70,36 @@ export async function downloadSelection(manifest:DownloadManifest,includeOrigina
     if(navigator.storage?.persist)void navigator.storage.persist().catch(()=>{});
   } catch(error){try{await discardStage(cacheName);if(shellCache && shellCache!==localStorage.getItem('songbook-active-shell'))await discardStage(shellCache);}catch{ /* retain intent for reconciliation */ }throw error;}
 }
-async function verifyShell(selection:Selection):Promise<boolean>{
-  if(selection.manifest.schemaVersion!==1 || !(await caches.has(selection.cacheName)))return false;
-  const active=await openDb().then(db=>new Promise<{value:string;urls:string[];hashes:Record<string,string>}|undefined>((resolve,reject)=>{const tx=db.transaction('meta','readonly');const req=tx.objectStore('meta').get('activeShell');tx.oncomplete=()=>{db.close();resolve(req.result);};tx.onerror=()=>{db.close();reject(tx.error);};}));
-  if(!active?.value || !active.urls?.length || !await caches.has(active.value))return false;
-  const currentShell=await caches.open(active.value);for(const url of active.urls){const response=await currentShell.match(url,{ignoreVary:true});if(!response || !active.hashes?.[url] || await digest(await response.arrayBuffer())!==active.hashes[url])return false;}
-
-  if(!selection.shellUrls?.length || !selection.shellCache || !await caches.has(selection.shellCache))return false;
-  const shell=await caches.open(selection.shellCache);
-  for(const url of selection.shellUrls){const response=await shell.match(url,{ignoreVary:true});if(!response || !selection.shellHashes?.[url] || await digest(await response.arrayBuffer())!==selection.shellHashes[url])return false;}
+type ShellRecord={value:string;urls:string[];hashes:Record<string,string>};
+async function verifyShellCache(name:string,urls:string[],hashes:Record<string,string>):Promise<boolean>{
+  if(!name || !urls?.length || !await caches.has(name))return false;
+  const shell=await caches.open(name);
+  for(const url of urls){const response=await shell.match(url,{ignoreVary:true});if(!response || !hashes?.[url] || await digest(await response.arrayBuffer())!==hashes[url])return false;}
   return true;
 }
+function shellVerifier(){
+  const results=new Map<string,Promise<boolean>>();
+  const verify=(name:string,urls:string[],hashes:Record<string,string>)=>{
+    const key=JSON.stringify([name,urls,hashes]);
+    let result=results.get(key);
+    if(!result){result=verifyShellCache(name,urls,hashes);results.set(key,result);}
+    return result;
+  };
+  let activeVerified:Promise<boolean>|undefined;
+  return async (selection:Selection):Promise<boolean>=>{
+    if(selection.manifest.schemaVersion!==1 || !await caches.has(selection.cacheName))return false;
+    activeVerified ??= metaRequest<ShellRecord|undefined>('readonly',store=>store.get('activeShell'))
+      .then(active=>active ? verify(active.value,active.urls,active.hashes) : false);
+    return await activeVerified && verify(selection.shellCache,selection.shellUrls,selection.shellHashes);
+  };
+}
+function verifyShell(selection:Selection):Promise<boolean>{return shellVerifier()(selection);}
 async function verifySetlist(selection:Selection):Promise<boolean>{
   if(!selection.manifest.setlist)return true;
   return !!selection.setlistHash && await digest(new TextEncoder().encode(JSON.stringify(selection.manifest.setlist)))===selection.setlistHash;
 }
-async function playableSnapshot(selection:Selection,snapshot:Snapshot):Promise<boolean>{
-  if(!await verifyShell(selection) || !await verifySnapshot(snapshot))return false;
+async function playableSnapshot(selection:Selection,snapshot:Snapshot,checkShell=verifyShell):Promise<boolean>{
+  if(!await checkShell(selection) || !await verifySnapshot(snapshot))return false;
   const crops=(snapshot.source_refs ?? []).flatMap(ref=>ref.crop_asset_id?[ref.crop_asset_id]:[]);
   if(!crops.length)return true;
   const cache=await caches.open(sharedCache(selection.manifest));
@@ -146,7 +159,8 @@ export async function listOfflineSnapshots():Promise<Snapshot[]>{
   const scope=localStorage.getItem('songbook-offline-scope');if(!scope)return [];
   const rows=await transaction<Selection[]>('readonly',s=>s.getAll());
   const snapshots=new Map<string,Snapshot>();
-  for(const row of rows){if(!row.key.startsWith(`${scope}:`))continue;for(const item of row.manifest.snapshots)if(!snapshots.has(item.id) && await playableSnapshot(row,item))snapshots.set(item.id,item);}
+  const checkShell=shellVerifier();
+  for(const row of rows){if(!row.key.startsWith(`${scope}:`))continue;for(const item of row.manifest.snapshots)if(!snapshots.has(item.id) && await playableSnapshot(row,item,checkShell))snapshots.set(item.id,item);}
   return [...snapshots.values()];
 }
 export async function listOfflineSetlists<T>():Promise<T[]>{

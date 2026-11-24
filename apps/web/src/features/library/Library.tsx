@@ -1,13 +1,22 @@
 import {ActionPopover} from '../ActionPopover';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ExportButtons} from '../exports/ExportButtons';
-import {downloadSelection,verifyAvailability,removeDownload,listOfflineSnapshots,getOfflineSnapshot} from '../../offline/downloads';
+import {downloadSelection,verifyAvailability,removeDownload,listOfflineSnapshots,getOfflineSnapshot,getScopedSelections} from '../../offline/downloads';
 import type {DownloadManifest} from '../../offline/downloads';
 import {prepareShell} from '../../offline/shell';
 import {checkDownloads,arrangementSyncStatus,refreshDownloads} from '../../offline/sync';
 import {parseSource} from '../../../../../packages/music/src/parser';
 
 type Entry = {cachedOnly?:boolean;source_only:boolean; id:string; song_id:string; revision:string; metadata_revision:number; title:string; artist:string; favorite:boolean; tags:string[]; notes:string};
+type BulkDownload = {total:number;pending?:number;processed:number;failed:number};
+
+async function downloadArrangement(id:string,includeOriginals:boolean,getShell=prepareShell) {
+  const response=await fetch(`/api/downloads/arrangements/${encodeURIComponent(id)}`);
+  if (!response.ok) throw new Error('Download unavailable');
+  const manifest=await response.json() as DownloadManifest;
+  await downloadSelection(manifest,includeOriginals,await getShell());
+}
+
 export function Library({csrf}: {csrf:string}) {
   const [query,setQuery] = useState('');
   const [artistFilter,setArtistFilter] = useState('');
@@ -28,6 +37,10 @@ export function Library({csrf}: {csrf:string}) {
   const [syncStates,setSyncStates]=useState<Record<string,string>>({});
   const [syncUnavailable,setSyncUnavailable]=useState<Record<string,boolean>>({});
   const [syncCycle,setSyncCycle]=useState(0);
+  const bulkActive=useRef(false);
+  const [bulkBusy,setBulkBusy]=useState(false);
+  const [bulkProgress,setBulkProgress]=useState<BulkDownload>();
+  const [bulkError,setBulkError]=useState('');
   useEffect(() => {
     const update = () => {
       setSyncCycle(value => value+1);
@@ -46,11 +59,54 @@ export function Library({csrf}: {csrf:string}) {
   const [originals,setOriginals]=useState<Record<string,boolean>>({});
   async function download(id:string){const previous=downloads[id] ?? 'Online only';try {setDownloadErrors(old=>({...old,[id]:''}));setDownloads(old=>({...old,[id]:'Downloading'}));
     if(direct[id] && syncStates[id]==='outdated'){const report=await refreshDownloads([`arrangement:${id}`]);if(report.failed.length)throw new Error();}
-    else{const response=await fetch(`/api/downloads/arrangements/${id}`);if(!response.ok)throw new Error();const manifest=await response.json() as DownloadManifest;const shell=await prepareShell();await downloadSelection(manifest,!!originals[id],shell);}
+    else await downloadArrangement(id,!!originals[id]);
     setDownloads(old=>({...old,[id]:awaitStatus}));setDirect(old=>({...old,[id]:true}));setSyncStates(old=>({...old,[id]:'current'}));setSyncUnavailable(old=>({...old,[id]:false}));setCacheCycle(value=>value+1);
   }catch{setDownloads(old=>({...old,[id]:previous}));setDownloadErrors(old=>({...old,[id]:'Download failed'}));}}
   const awaitStatus='Downloaded';
 
+  async function downloadAll() {
+    if (bulkActive.current) return;
+    bulkActive.current=true;
+    setBulkBusy(true);
+    setBulkProgress(undefined);
+    setBulkError('');
+    let attempted=false;
+    try {
+      const response=await fetch('/api/library');
+      if (!response.ok) throw new Error('Library unavailable');
+      const songs=(await response.json() as Entry[]).filter(entry=>!entry.source_only);
+      const progress:BulkDownload={total:songs.length,processed:0,failed:0};
+      setBulkProgress({...progress});
+      if (!songs.length) return;
+
+      const [snapshots,selections]=await Promise.all([listOfflineSnapshots(),getScopedSelections()]);
+      const revisions=new Map(snapshots.map(snapshot=>[snapshot.id,snapshot.revision]));
+      const pending=songs.filter(song=>revisions.get(song.id)!==song.revision);
+      progress.pending=pending.length;
+      setBulkProgress({...progress});
+      const includeOriginals=new Map(selections.map(selection=>[selection.manifest.selectionId,selection.includeOriginals]));
+      let shell:string|undefined;
+      for (const song of pending) {
+        attempted=true;
+        try {
+          await downloadArrangement(song.id,includeOriginals.get(`arrangement:${song.id}`) ?? false,async()=>{
+            if (!shell || !await caches.has(shell)) shell=await prepareShell();
+            return shell;
+          });
+        } catch {
+          progress.failed++;
+        }
+        progress.processed++;
+        setBulkProgress({...progress});
+      }
+    } catch {
+      setBulkError('Could not prepare library downloads. Please try again.');
+    } finally {
+      bulkActive.current=false;
+      setBulkBusy(false);
+      if (attempted) setCacheCycle(value=>value+1);
+    }
+  }
   useEffect(() => {
     let active=true;
     void listOfflineSnapshots().then(items=>{
@@ -129,5 +185,12 @@ export function Library({csrf}: {csrf:string}) {
   const visibleEntries=entries.filter(entry=>!artistFilter || entry.artist.toLocaleLowerCase()===artistFilter.toLocaleLowerCase());
   if(sort!=='recent') {const [field,direction]=sort.split('-') as ['title'|'artist',string];visibleEntries.sort((a,b)=>(direction==='desc'?-1:1)*compare(a[field],b[field]) || compare(a.title,b.title) || a.id.localeCompare(b.id));}
   function sortBy(field:'title'|'artist'){setSort(current=>current===`${field}-asc`?`${field}-desc`:`${field}-asc`);}
-  return <section className="library"><div className="library-heading"><h2>Library</h2><div className="library-actions"><a href="/imports">Import music</a> {csrf && <ExportButtons csrf={csrf} />}</div></div><div className="library-filters"><div><label htmlFor="search">Search</label><div className="library-search-field">{artistFilter && <span className="library-artist-chip"><span>Artist: {artistFilter}</span><button type="button" onClick={()=>setArtistFilter('')} aria-label="Clear artist filter">×</button></span>}<input id="search" type="search" placeholder="Find music…" value={query} onChange={event => setQuery(event.target.value)} /></div></div><div><label htmlFor="tag">Tag</label><div className="library-search-field library-tag-field">{tagFilter && <span className="library-artist-chip"><span>{tagFilter}</span><button type="button" onClick={()=>setTagFilter('')} aria-label="Clear tag filter">×</button></span>}<input id="tag" value={tag} onChange={event => setTag(event.target.value)} /></div></div><label><input type="checkbox" checked={favorites} onChange={event => setFavorites(event.target.checked)} />Favorites only</label><label><input type="checkbox" checked={recent} onChange={event => {setRecent(event.target.checked);setSort(event.target.checked?'recent':'title-asc');}} />Recently played</label><div className="library-mobile-sort"><label htmlFor="library-sort">Sort library</label><select id="library-sort" value={sort} onChange={event=>setSort(event.target.value)}><option value="title-asc">Song A–Z</option><option value="title-desc">Song Z–A</option><option value="artist-asc">Artist A–Z</option><option value="artist-desc">Artist Z–A</option>{recent && <option value="recent">Recently played</option>}</select></div></div>{(error || !csrf) && <p role="alert">{error || 'Offline: showing verified downloaded songs.'}</p>}<div className="library-table-scroll" role="region" aria-label="Song library table" tabIndex={0}><table className="library-table" aria-label="Song library"><thead><tr><th scope="col" className="favorite-column">Favorite</th><th scope="col" aria-label="Song" aria-sort={sort.startsWith('title-')?(sort.endsWith('asc')?'ascending':'descending'):undefined}><button className="library-sort-button" aria-label="Sort by Song" onClick={()=>sortBy('title')}>Song {sort.startsWith('title-') && <span aria-hidden="true">{sort.endsWith('asc')?'▲':'▼'}</span>}</button></th><th scope="col" aria-label="Artist" aria-sort={sort.startsWith('artist-')?(sort.endsWith('asc')?'ascending':'descending'):undefined}><button className="library-sort-button" aria-label="Sort by Artist" onClick={()=>sortBy('artist')}>Artist {sort.startsWith('artist-') && <span aria-hidden="true">{sort.endsWith('asc')?'▲':'▼'}</span>}</button></th><th scope="col">Tags</th><th scope="col" className="actions-column">Actions</th></tr></thead><tbody>{visibleEntries.map(entry => <tr key={entry.id}><td className="favorite-column">{!entry.source_only && !entry.cachedOnly && !!csrf ? <button onClick={() => void favorite(entry)} aria-pressed={entry.favorite} aria-label={`${entry.favorite ? 'Remove favorite' : 'Favorite'} ${entry.title}`}>{entry.favorite ? '★' : '☆'}</button> : <span aria-label="Favorite unavailable">—</span>}</td><th scope="row"><a href={entry.source_only ? `/api/sources/${encodeURIComponent(entry.id)}/original` : `/player?id=${encodeURIComponent(entry.id)}${entry.cachedOnly ? '&cached=1' : ''}`}>{entry.title}</a>{entry.source_only && <span className="source-only-label">Original PDF</span>}</th><td>{entry.artist ? <button className="library-artist-button" aria-label={`Filter by ${entry.artist}`} onClick={()=>setArtistFilter(entry.artist)}>{entry.artist}</button> : '—'}</td><td>{entry.tags.length ? entry.tags.map((item,index)=><React.Fragment key={item}>{index>0 && ', '}<button className="library-artist-button" aria-label={`Filter by tag ${item}`} onClick={()=>setTagFilter(item)}>{item}</button></React.Fragment>) : '—'}</td><td><div className="library-row-actions">{!entry.source_only && !entry.cachedOnly && !!csrf && <ExportButtons csrf={csrf} id={entry.id} />}{(!entry.source_only || (!!csrf && !entry.cachedOnly)) && <ActionPopover label="More" className="offline-actions">{!entry.source_only && <><strong>Offline copy</strong>{downloads[entry.id] && <span>{downloads[entry.id]}</span>}{downloadErrors[entry.id] && <span role="alert">{downloadErrors[entry.id]}</span>}{syncStates[entry.id] && syncStates[entry.id]!=='current' && <span>{syncStates[entry.id]==='outdated'?'Outdated':syncStates[entry.id]==='deleted'?'Deleted':'Unavailable'}</span>}{syncUnavailable[entry.id] && <span>Sync unavailable</span>}{!!csrf && <><label><input type="checkbox" checked={!!originals[entry.id]} onChange={event=>setOriginals(old=>({...old,[entry.id]:event.target.checked}))}/>Include original PDF</label><button onClick={()=>void download(entry.id)}>{syncStates[entry.id]==='outdated' && direct[entry.id] ? 'Refresh download' : 'Download for offline'}</button>{direct[entry.id] && <button onClick={()=>void removeOffline(entry.id)}>Remove download</button>}</>}{downloads[entry.id]==='Downloaded' && <a href={`/player?id=${encodeURIComponent(entry.id)}&cached=1`}>Play cached copy</a>}{!navigator.locks && <small>Shared download files may remain until you remove private downloads when signing out.</small>}</>}{!!csrf && !entry.cachedOnly && <button className="library-delete" onClick={()=>void deleteEntry(entry)}>Delete from library</button>}</ActionPopover>}</div></td></tr>)}</tbody></table>{!visibleEntries.length && <p className="library-empty">No matching songs.</p>}</div></section>;
+  return <section className="library"><div className="library-heading"><h2>Library</h2><div className="library-actions"><a href="/imports">Import music</a> {csrf && <><ExportButtons csrf={csrf} /><button type="button" disabled={bulkBusy || Object.values(downloads).includes('Downloading')} onClick={()=>void downloadAll()}>Download all for offline</button></>}</div></div>
+    {(bulkBusy || bulkProgress || bulkError) && <div className="library-download-progress">
+      <span role="status">{bulkError || (bulkBusy
+        ? bulkProgress?.pending ? `Downloading songs… ${bulkProgress.processed} of ${bulkProgress.pending} processed` : bulkProgress ? 'Verifying saved songs…' : 'Preparing library downloads…'
+        : bulkProgress?.total ? `${bulkProgress.total-bulkProgress.failed} of ${bulkProgress.total} songs available offline.${bulkProgress.failed ? ` ${bulkProgress.failed} failed. Click Download all for offline to retry.` : ''}` : 'No songs to download.')}</span>
+      {bulkBusy && <progress aria-label="Library download progress" max={bulkProgress?.pending || 1} value={bulkProgress?.pending ? bulkProgress.processed : undefined}/>}
+    </div>}
+    <div className="library-filters"><div><label htmlFor="search">Search</label><div className="library-search-field">{artistFilter && <span className="library-artist-chip"><span>Artist: {artistFilter}</span><button type="button" onClick={()=>setArtistFilter('')} aria-label="Clear artist filter">×</button></span>}<input id="search" type="search" placeholder="Find music…" value={query} onChange={event => setQuery(event.target.value)} /></div></div><div><label htmlFor="tag">Tag</label><div className="library-search-field library-tag-field">{tagFilter && <span className="library-artist-chip"><span>{tagFilter}</span><button type="button" onClick={()=>setTagFilter('')} aria-label="Clear tag filter">×</button></span>}<input id="tag" value={tag} onChange={event => setTag(event.target.value)} /></div></div><label><input type="checkbox" checked={favorites} onChange={event => setFavorites(event.target.checked)} />Favorites only</label><label><input type="checkbox" checked={recent} onChange={event => {setRecent(event.target.checked);setSort(event.target.checked?'recent':'title-asc');}} />Recently played</label><div className="library-mobile-sort"><label htmlFor="library-sort">Sort library</label><select id="library-sort" value={sort} onChange={event=>setSort(event.target.value)}><option value="title-asc">Song A–Z</option><option value="title-desc">Song Z–A</option><option value="artist-asc">Artist A–Z</option><option value="artist-desc">Artist Z–A</option>{recent && <option value="recent">Recently played</option>}</select></div></div>{(error || !csrf) && <p role="alert">{error || 'Offline: showing verified downloaded songs.'}</p>}<div className="library-table-scroll" role="region" aria-label="Song library table" tabIndex={0}><table className="library-table" aria-label="Song library"><thead><tr><th scope="col" className="favorite-column">Favorite</th><th scope="col" aria-label="Song" aria-sort={sort.startsWith('title-')?(sort.endsWith('asc')?'ascending':'descending'):undefined}><button className="library-sort-button" aria-label="Sort by Song" onClick={()=>sortBy('title')}>Song {sort.startsWith('title-') && <span aria-hidden="true">{sort.endsWith('asc')?'▲':'▼'}</span>}</button></th><th scope="col" aria-label="Artist" aria-sort={sort.startsWith('artist-')?(sort.endsWith('asc')?'ascending':'descending'):undefined}><button className="library-sort-button" aria-label="Sort by Artist" onClick={()=>sortBy('artist')}>Artist {sort.startsWith('artist-') && <span aria-hidden="true">{sort.endsWith('asc')?'▲':'▼'}</span>}</button></th><th scope="col">Tags</th><th scope="col" className="actions-column">Actions</th></tr></thead><tbody>{visibleEntries.map(entry => <tr key={entry.id}><td className="favorite-column">{!entry.source_only && !entry.cachedOnly && !!csrf ? <button onClick={() => void favorite(entry)} aria-pressed={entry.favorite} aria-label={`${entry.favorite ? 'Remove favorite' : 'Favorite'} ${entry.title}`}>{entry.favorite ? '★' : '☆'}</button> : <span aria-label="Favorite unavailable">—</span>}</td><th scope="row"><a href={entry.source_only ? `/api/sources/${encodeURIComponent(entry.id)}/original` : `/player?id=${encodeURIComponent(entry.id)}${entry.cachedOnly ? '&cached=1' : ''}`}>{entry.title}</a>{entry.source_only && <span className="source-only-label">Original PDF</span>}</th><td>{entry.artist ? <button className="library-artist-button" aria-label={`Filter by ${entry.artist}`} onClick={()=>setArtistFilter(entry.artist)}>{entry.artist}</button> : '—'}</td><td>{entry.tags.length ? entry.tags.map((item,index)=><React.Fragment key={item}>{index>0 && ', '}<button className="library-artist-button" aria-label={`Filter by tag ${item}`} onClick={()=>setTagFilter(item)}>{item}</button></React.Fragment>) : '—'}</td><td><div className="library-row-actions">{!entry.source_only && !entry.cachedOnly && !!csrf && <ExportButtons csrf={csrf} id={entry.id} />}{(!entry.source_only || (!!csrf && !entry.cachedOnly)) && <ActionPopover label="More" className="offline-actions">{!entry.source_only && <><strong>Offline copy</strong>{downloads[entry.id] && <span>{downloads[entry.id]}</span>}{downloadErrors[entry.id] && <span role="alert">{downloadErrors[entry.id]}</span>}{syncStates[entry.id] && syncStates[entry.id]!=='current' && <span>{syncStates[entry.id]==='outdated'?'Outdated':syncStates[entry.id]==='deleted'?'Deleted':'Unavailable'}</span>}{syncUnavailable[entry.id] && <span>Sync unavailable</span>}{!!csrf && <><label><input type="checkbox" checked={!!originals[entry.id]} onChange={event=>setOriginals(old=>({...old,[entry.id]:event.target.checked}))}/>Include original PDF</label><button disabled={bulkBusy || downloads[entry.id]==='Downloading'} onClick={()=>void download(entry.id)}>{syncStates[entry.id]==='outdated' && direct[entry.id] ? 'Refresh download' : 'Download for offline'}</button>{direct[entry.id] && <button disabled={bulkBusy} onClick={()=>void removeOffline(entry.id)}>Remove download</button>}</>}{downloads[entry.id]==='Downloaded' && <a href={`/player?id=${encodeURIComponent(entry.id)}&cached=1`}>Play cached copy</a>}{!navigator.locks && <small>Shared download files may remain until you remove private downloads when signing out.</small>}</>}{!!csrf && !entry.cachedOnly && <button className="library-delete" onClick={()=>void deleteEntry(entry)}>Delete from library</button>}</ActionPopover>}</div></td></tr>)}</tbody></table>{!visibleEntries.length && <p className="library-empty">No matching songs.</p>}</div></section>;
 }
