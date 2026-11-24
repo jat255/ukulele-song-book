@@ -18,3 +18,10 @@ describe('responsive song layout', () => {
     expect(plan[2]).toEqual(['c','tab']);
   });
 });
+
+it('prefers a section boundary near the balanced column break', () => {
+  const blocks = Array.from({length:10}, (_,index) => ({
+    id:String(index), height:20, kind:index===6 ? 'heading' as const : 'line' as const,
+  }));
+  expect(layoutSections(blocks,2,100).map(column=>column.length)).toEqual([6,4]);
+});

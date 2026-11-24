@@ -7,5 +7,5 @@ export function ActionPopover({label,className='',children,onOpen,icon}:{label:s
   if(!panel.current?.matches(':popover-open'))onOpen?.();
   const rect=event.currentTarget.getBoundingClientRect();
   if(panel.current){panel.current.style.left=`${Math.max(8,Math.min(rect.right-300,window.innerWidth-316))}px`;panel.current.style.top=`${Math.max(8,Math.min(rect.bottom+8,window.innerHeight-320))}px`;}
- }}>{icon ?? <>{label}<span aria-hidden="true"> ▾</span></>}</button><div ref={panel} id={id} popover="auto" aria-label={`${label} options`} className="action-popover-panel">{children}</div></span>;
+ }}>{icon ?? label}</button><div ref={panel} id={id} popover="auto" aria-label={`${label} options`} className="action-popover-panel">{children}</div></span>;
 }

@@ -47,7 +47,6 @@ body {margin:0}
 .player-layout {grid-template-columns:minmax(0,1fr) 280px;align-items:start}
 .player-tools {position:sticky;top:0;max-height:100dvh;padding:.9rem;gap:.85rem;background:#edf0e7;scrollbar-width:thin}
 .tools-heading {padding:.2rem .3rem}
-.eyebrow {font-size:.65rem;letter-spacing:.15em;font-weight:700;color:#70816e}
 .player-tools h2 {margin:.25rem 0 0;font-size:1.4rem}
 .tool-group {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.7rem .65rem;padding:.9rem;background:#fffdf8;border:1px solid #d8dfd2;border-radius:12px;box-shadow:0 2px 3px #24382b04}
 .tool-group h3 {grid-column:1/-1;font-size:.8rem;font-weight:700;margin:0;padding-bottom:.6rem;border-bottom:1px solid #e4e8df;color:#35543f}
@@ -63,9 +62,6 @@ body {margin:0}
 .tool-secondary {display:flex;flex-direction:column;gap:.65rem;padding:.1rem .3rem}
 .tool-secondary button {font-size:.78rem;background:transparent}
 .song-chords {margin:0 0 1.1rem;border-bottom:1px solid #dce2d5;padding:0 0 .8rem}
-.song-chords-heading {display:flex;gap:1rem;align-items:center;justify-content:space-between}
-.song-chords h2 {font:600 .8rem system-ui,sans-serif;color:#62735f;margin:0;text-transform:uppercase;letter-spacing:.08em}
-.song-chords-heading button {font-size:.75rem;padding:.3rem .6rem;background:transparent}
 .song-chords ul {list-style:none;margin:.6rem 0 0;padding:0;display:flex;gap:.65rem;overflow-x:auto;align-items:flex-start}
 .song-chords .chord-diagram {flex:0 0 86px;box-sizing:border-box;flex-direction:column;align-items:center;gap:.2rem;border:1px solid #e0e5d9;padding:.4rem}
 .song-chords svg {width:76px;max-height:105px}
@@ -78,3 +74,36 @@ body {margin:0}
 .step-control input[type="number"]::-webkit-inner-spin-button,.step-control input[type="number"]::-webkit-outer-spin-button {-webkit-appearance:none;margin:0}
 .chord-popover {display:block;position:fixed;z-index:100;box-sizing:border-box;width:140px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;font:14px/1.4 system-ui,sans-serif}
 .chord-popover .chord-diagram {list-style:none}
+
+/* Reading view */
+.player {background:#faf8f2;color:#242b27}
+.player-header {flex-wrap:wrap;gap:.4rem .9rem;background:#193d34;color:#fffaf0}
+.player-header a {color:inherit}
+.player-header a:hover {text-decoration:underline}
+.player-header .player-chords-toggle {margin-left:auto;padding:.3rem .65rem;background:#2c5449;border-color:#75958a;color:#fffaf0;font-size:.85rem}
+.player-header .player-chords-toggle:hover {background:#406c5f}
+.player-music {padding:clamp(.9rem,2vw,2rem)}
+.player .music--play h1 {font:700 1.85em/1.12 Georgia,serif;letter-spacing:-.02em;color:#183c32;margin:0 0 .24em}
+.player .music--play .metadata {color:#4c5e54;font:600 .88em/1.4 system-ui,sans-serif;margin:0 0 .75em}
+.player .music--play .section-label {font:700 .76em/1.35 system-ui,sans-serif;letter-spacing:.045em;text-transform:uppercase;color:#275647;margin:.55em 0 .2em}
+.player .music--play .section-label[data-section="chorus"] {color:#294d76}
+.player .music--play .comment {width:fit-content;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;font:italic .78em/1.35 system-ui,sans-serif;color:#4b5f56;background:#eaf0ea;border-radius:.2em;margin:.2em 0;padding:.1em .35em}
+.player .music--play .unsupported {font:italic .78em/1.35 system-ui,sans-serif;color:#5b4e3d}
+.player .music--play .chord {color:#294d76}
+.player .song-chords ul {margin:0}
+
+.player .score {font-size:var(--music-size,20px)}
+.player .score-heading {padding-bottom:.45em;margin-bottom:.55em;border-bottom:1px solid var(--line)}
+.player .score-heading h1 {font:700 1.45em/1.12 Georgia,serif;color:#183c32;margin:0}
+.player .score-heading .metadata {font:600 .8em/1.3 system-ui,sans-serif;color:#4c5e54;margin:.2em 0 0}
+.player .music--play .music-block {display:flow-root}
+.player .music--play .music-block--chorus {margin-inline-start:clamp(.35rem,1vw,.85rem);padding-inline-start:.55em;border-inline-start:2px solid #829caf}
+.player .music--play .music-block--chorus:not(.music-block--chorus + .music-block--chorus) {margin-block-start:.4em}
+.player .music--play .music-block:first-child > .section-label {margin-top:0}
+.score-space {height:.35em}
+.music-block:has(> .score-space) + .music-block > .score-space {height:0}
+.chord-only {display:flex;flex-wrap:wrap;gap:.15em .55em;margin:.12em 0}
+.repeat-cue {color:#294d76;font:italic 600 .8em/1.35 system-ui,sans-serif;margin:.35em 0}
+.player-header .player-view-toggle {padding:.3rem .65rem;background:#2c5449;border-color:#75958a;color:#fffaf0;font-size:.85rem}
+.player-header .player-view-toggle[aria-pressed="true"] {background:#f4e7cd;color:#4e3513;border-color:#f4e7cd}
+.lead-sheet-status {margin:0 0 .7rem;padding:.45rem .65rem;border-left:3px solid #ae7c33;background:#f4e7cd;color:#674718;font-size:.82rem}

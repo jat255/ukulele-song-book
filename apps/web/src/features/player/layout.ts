@@ -10,12 +10,27 @@ export function chooseScreenColumns(input:{widthPx:number; fontPx:number; prefer
 
 export function layoutSections(blocks:BlockMeasurement[], columns:number, targetHeightPx:number):ColumnPlan {
   const result:ColumnPlan = Array.from({length:Math.max(1, Math.floor(columns))}, () => []);
-  let column=0, used=0;
-  for (let index=0; index<blocks.length; index++) {
-    const block=blocks[index];
-    const nextHeight=block.kind==='heading' && index+1<blocks.length ? blocks[index+1].height : 0;
-    if (column < result.length-1 && used > 0 && used + block.height + nextHeight > targetHeightPx) {column++; used=0;}
-    result[column].push(block.id); used += block.height;
+  let start=0;
+  for (let column=0; column<result.length-1 && start<blocks.length; column++) {
+    let used=0;
+    let end=start;
+    let boundary=-1;
+    let distance=targetHeightPx*.25;
+    let fallback=-1;
+    for (; end<blocks.length && used<=targetHeightPx*1.25; end++) {
+      const block=blocks[end];
+      const nextHeight=block.kind==='heading' ? blocks[end+1]?.height ?? 0 : 0;
+      if (end>start && block.kind==='heading' && Math.abs(used-targetHeightPx)<=distance) {
+        boundary=end;
+        distance=Math.abs(used-targetHeightPx);
+      }
+      if (end>start && fallback<0 && used+block.height+nextHeight>targetHeightPx) fallback=end;
+      used+=block.height;
+    }
+    const cut=boundary>start ? boundary : fallback>start ? fallback : end;
+    result[column]=blocks.slice(start,cut).map(block=>block.id);
+    start=cut;
   }
+  result[result.length-1]=blocks.slice(start).map(block=>block.id);
   return result;
 }

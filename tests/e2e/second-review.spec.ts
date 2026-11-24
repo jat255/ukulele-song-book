@@ -7,9 +7,9 @@ test('song destinations, grouped controls, chord toggle and floating actions',as
  const id=readFileSync('/private/tmp/songbook-auth-e2e-performance-id','utf8');await page.goto('/player?id='+id);
  await expect(page.getByRole('region',{name:'Key & capo'})).toBeVisible();
  await expect(page.getByRole('region',{name:'Readability'})).toBeVisible();
- const chords=page.getByRole('region',{name:'Song chords'});await expect(chords.locator('svg').first()).toBeVisible();
- await page.getByRole('button',{name:'Hide chords',exact:true}).click();await expect(chords.locator('svg')).toHaveCount(0);
+ const chords=page.getByRole('region',{name:'Song chords'});await expect(chords).toHaveCount(0);
  await page.getByRole('button',{name:'Show chords',exact:true}).click();await expect(chords.locator('svg').first()).toBeVisible();
+ await page.getByRole('button',{name:'Hide chords',exact:true}).click();await expect(chords).toHaveCount(0);
  await page.screenshot({path:'.local/review/second-player-desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
