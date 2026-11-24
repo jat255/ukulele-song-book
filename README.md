@@ -28,6 +28,10 @@ These examples use a demo library.
 
 ![Two-column chord chart with chord diagrams, indented choruses, and song controls](docs/screenshots/player.png)
 
+### ChordPro editor
+
+![Editable ChordPro source next to a live arrangement preview, with controls to save, duplicate, or restore the arrangement](docs/screenshots/chordpro-editor.png)
+
 ### Setlists
 
 ![Setlist editor with four songs and controls to reorder, play, print, or download the set](docs/screenshots/setlists.png)
