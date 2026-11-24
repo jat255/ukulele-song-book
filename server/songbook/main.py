@@ -60,7 +60,26 @@ _session_dependency = Depends(require_session)
 _pdf_lock = threading.Lock()
 
 
-def create_app(settings: Settings) -> FastAPI:
+_WEB_DIST = Path(__file__).resolve().parents[2] / "apps/web/dist"
+
+
+def _cache_policy(path: str, status: int) -> str:
+    """Return the Cache-Control value for a response that does not set its own.
+
+    Vite puts a content hash in every filename under /assets/, so a browser can keep
+    those forever. Every other static file (index.html, sw.js, the manifest, icons)
+    keeps its name across deploys, so the browser must revalidate it on each load or
+    it can run an old shell against a newer API. API and error responses are private
+    and change per request, so the browser never stores them.
+    """
+    if path.startswith(("/api/", "/health")) or status >= 400:
+        return "no-store"
+    if path.startswith("/assets/"):
+        return "public, max-age=31536000, immutable"
+    return "no-cache"
+
+
+def create_app(settings: Settings, web_dist: Path = _WEB_DIST) -> FastAPI:
     store = LibraryStore(settings.library_root)
     store.recover_pending_writes()
     app = FastAPI()
@@ -116,6 +135,15 @@ def create_app(settings: Settings) -> FastAPI:
                 },
             )
         return await call_next(request)
+
+    # Registered after restrict_loopback so it wraps it and also covers its 403s.
+    @app.middleware("http")
+    async def cache_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault(
+            "Cache-Control", _cache_policy(request.url.path, response.status_code)
+        )
+        return response
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException):
@@ -377,7 +405,6 @@ def create_app(settings: Settings) -> FastAPI:
         except ValueError:
             raise HTTPException(400, detail="Page unavailable") from None
 
-    web_dist = Path(__file__).resolve().parents[2] / "apps/web/dist"
     if web_dist.is_dir():
 
         @app.get("/imports", include_in_schema=False)
