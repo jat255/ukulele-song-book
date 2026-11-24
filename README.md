@@ -16,6 +16,26 @@ copies for playing away from a connection.
   alongside accepted arrangements.
 - Download songs for offline use, export your library, and make backups.
 
+## Screenshots
+
+These examples use a demo library.
+
+### Song library
+
+![Song library with search, tag filters, favorites, and per-song actions](docs/screenshots/library.png)
+
+### Player
+
+![Two-column chord chart with chord diagrams, indented choruses, and song controls](docs/screenshots/player.png)
+
+### Setlists
+
+![Setlist editor with four songs and controls to reorder, play, print, or download the set](docs/screenshots/setlists.png)
+
+### Imports
+
+![Import screen with a file drop zone, Codex model picker, and a PDF draft in the review queue](docs/screenshots/imports.png)
+
 ## Run locally with Docker
 
 Install Docker with Compose, then run:
